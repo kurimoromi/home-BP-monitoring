@@ -18,7 +18,7 @@ button{background:#2563eb;color:#fff;border:none;font-weight:600}
 .tablewrap{overflow:auto;max-height:520px}
 table{width:100%;border-collapse:collapse}
 th,td{padding:10px;border-bottom:1px solid #eee;text-align:left;font-size:.9rem}
-.session{border-left:4px solid #2563eb;padding-left:10px;margin-bottom:12px}
+.session{border-left:4px solid #2563eb;padding-left:10px;margin-bottom:12px}.icon-delete{background:transparent!important;color:#666!important;border:1px solid #ddd!important;padding:6px 8px!important;width:auto!important}
 </style>
 <script src="https://cdn.jsdelivr.net/npm/html2canvas"></script></head>
 <body>
@@ -132,21 +132,12 @@ th,td{padding:10px;border-bottom:1px solid #eee;text-align:left;font-size:.9rem}
 <table>
 <thead>
 <tr>
-<th>Date/Time</th><th>BP</th><th>Pulse</th><th>Location</th><th>Medication</th><th>Session</th><th>Note</th><th>Delete</th>
+<th>Date/Time</th><th>Session</th><th>BP</th><th>Pulse</th><th>Location</th><th>Medication</th><th>Note</th><th>Delete</th>
 </tr>
 </thead>
 <tbody id="tbody"></tbody>
 </table>
-<div style="margin-top:10px;padding:10px;border:1px solid #ddd;border-radius:10px;background:#fafafa;font-size:.9rem">
-<b>Flag Reference</b><br>
-🔵 Low-range reading = ตัวเลขอยู่ในช่วงความดันต่ำ<br>
-🟢 Normal-range = ตัวเลขอยู่ในช่วงปกติ<br>
-🟡 Elevated-range reading = ตัวเลขสูงกว่าปกติ<br>
-🟠 Hypertension-range reading = ตัวเลขอยู่ในช่วงค่าความดันสูง<br><br>
-<small>Flag ใช้ช่วยอ่านและจัดกลุ่มค่าความดัน ไม่ใช่การวินิจฉัยโรค</small>
-</div>
-</div>
-</div>
+</div></div>
 
 <div class="card">
 <h3>Session Timeline</h3>
@@ -306,17 +297,16 @@ function renderTable(data){
   tbody.innerHTML+=`
   <tr>
   <td>${r.date}<br>${r.time}</td>
+  <td>${(r.session||'-')} #${(r.round||'-')}</td>
   <td>${r.sys}/${r.dia}</td>
-  <td>${r.pulse||''}</td>
-  <td>${r.location}</td>
-  <td>${r.medication||''}</td>
-  <td>${r.session} #${r.round}</td>
-  <td>${r.note||''}</td>
-  <td><button onclick="deleteReading('${r.id}')">🗑️</button></td>
+  <td>${r.pulse||'-'}</td>
+  <td>${r.location||'-'}</td>
+  <td>${r.medication||'-'}</td>
+  <td>${r.note||'-'}</td>
+  <td><button class="icon-delete" onclick="deleteReading('${r.id}')">🗑️</button></td>
   </tr>`;
  });
 }
-
 
 function renderChart(data){
  let ctx=gid('chart');
@@ -341,11 +331,15 @@ function renderChart(data){
 }
 
 function saveReportImage(){
- html2canvas(document.body,{backgroundColor:'#ffffff'}).then(canvas=>{
+ const table=document.querySelector('.tablewrap');
+ const dels=document.querySelectorAll('.icon-delete, th:last-child, td:last-child');
+ dels.forEach(el=>el.style.display='none');
+ html2canvas(table,{backgroundColor:'#ffffff'}).then(canvas=>{
   let a=document.createElement('a');
-  a.download='BP_Report.png';
+  a.download='BP_Evidence_Table.png';
   a.href=canvas.toDataURL('image/png');
   a.click();
+  dels.forEach(el=>el.style.display='');
  });
 }
 
@@ -376,15 +370,6 @@ function deleteReading(id){
 gid('date').valueAsDate=new Date();
 renderAll();
 </script>
-
-<div style="margin-top:12px;font-size:.85rem;color:#666">
-<b>Flag Reference</b>:
-Low-range = ตัวเลขอยู่ในช่วงความดันต่ำ |
-Normal-range = ตัวเลขอยู่ในช่วงปกติ |
-Elevated-range = ตัวเลขสูงกว่าปกติ |
-Hypertension-range = ตัวเลขอยู่ในช่วงค่าความดันสูง
-<br><small>Flag ใช้ช่วยอ่านข้อมูล ไม่ใช่การวินิจฉัยโรค</small>
-</div>
 
 </body>
 </html>
