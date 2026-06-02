@@ -1,86 +1,53 @@
+
 <!DOCTYPE html>
 <html lang="th">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Home BP Monitor – Family Care Edition</title>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>BP Monitor Phase 1</title>
 <style>
-:root{
- --bg:#f7f7f8; --card:#fff; --text:#222; --muted:#666; --line:#e6e6e8;
- --accent:#3b82f6; --ok:#1f9d55; --warn:#d97706;
-}
-*{box-sizing:border-box}
-body{
- font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
- background:var(--bg); color:var(--text); margin:0;
-}
-header{
- padding:22px 18px;
- background:#fff;
- border-bottom:1px solid var(--line);
- position:sticky; top:0;
-}
-h1{margin:0;font-size:1.35rem}
-.sub{color:var(--muted);font-size:.92rem;margin-top:4px}
-.container{max-width:980px;margin:auto;padding:18px}
-.grid{display:grid;gap:16px;grid-template-columns:repeat(auto-fit,minmax(280px,1fr))}
-.card{
- background:var(--card);
- border:1px solid var(--line);
- border-radius:16px;
- padding:18px;
-}
-h2{font-size:1rem;margin:0 0 14px}
-label{display:block;font-size:.92rem;margin:10px 0 5px}
+body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;background:#f5f6f8;margin:0;color:#222}
+header{background:#fff;padding:18px;border-bottom:1px solid #ddd;position:sticky;top:0}
+.container{max-width:1100px;margin:auto;padding:16px}
+.card{background:#fff;border:1px solid #ddd;border-radius:16px;padding:16px;margin-bottom:16px}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+label{display:block;margin:10px 0 5px}
 input,select,textarea,button{
- width:100%; padding:12px; border-radius:12px;
- border:1px solid #d8d8dc; font:inherit;
-}
-textarea{min-height:72px}
-button{
- background:var(--accent); color:#fff; border:none;
- font-weight:600; cursor:pointer;
-}
-.secondary{background:#eef3ff;color:#1d4ed8}
-.table-wrap{overflow:auto}
+width:100%;padding:12px;border-radius:10px;border:1px solid #ccc;font:inherit;box-sizing:border-box}
+textarea{min-height:60px}
+button{background:#2563eb;color:#fff;border:none;font-weight:600}
+.danger{background:#dc2626}
 table{width:100%;border-collapse:collapse}
-th,td{padding:10px;border-bottom:1px solid var(--line);font-size:.92rem;text-align:left}
-.badge{
- display:inline-block;padding:5px 10px;border-radius:999px;
- font-size:.8rem;background:#eef2ff;color:#334155
-}
-.avg{font-size:1.6rem;font-weight:700}
-.muted{color:var(--muted)}
-.footer{font-size:.82rem;color:var(--muted);margin-top:16px}
+th,td{padding:10px;border-bottom:1px solid #eee;text-align:left;font-size:.92rem}
+.tablewrap{overflow:auto;max-height:500px}
+small{color:#666}
+.notice{background:#eef4ff;padding:10px;border-radius:10px;font-size:.9rem}
 </style>
 </head>
 <body>
 <header>
-<h1>Home Blood Pressure Monitor</h1>
-<div class="sub">สำหรับติดตามความดันที่บ้าน + เตรียมข้อมูลส่งแพทย์</div>
+<b>BP Monitor – Phase 1</b><br>
+<small>Monitoring Foundation</small>
 </header>
 
 <div class="container">
+
 <div class="grid">
 
 <div class="card">
-<h2>Today Snapshot</h2>
-<div class="avg" id="avgDisplay">– / –</div>
-<div class="muted">ค่าเฉลี่ยจากข้อมูลในเครื่อง</div>
-<div style="margin-top:12px" id="countDisplay">0 readings</div>
-</div>
+<h3>Add Reading</h3>
 
-<div class="card">
-<h2>เพิ่มค่าความดัน</h2>
-<label>วันที่</label>
+<label>Date</label>
 <input type="date" id="date">
-<label>เวลา (เช่น 21:33 น.)</label>
+
+<label>Time</label>
 <input type="time" id="time">
-<div class="muted" style="margin-top:6px;font-size:.85rem">
-ก่อนวัดให้นั่งนิ่ง 3–5 นาที • ถ้าวัดหลายครั้งให้บันทึกแต่ละค่าแยกกันจนได้ค่าที่ใกล้กัน
+
+<div class="notice">
+ก่อนวัดให้นั่งนิ่ง 3–5 นาที • ถ้าวัดหลายครั้งให้บันทึกแยกแต่ละค่า
 </div>
 
-<label>ครั้งที่วัด</label>
+<label>Round</label>
 <select id="round">
 <option>ครั้งที่ 1</option>
 <option>ครั้งที่ 2</option>
@@ -88,14 +55,16 @@ th,td{padding:10px;border-bottom:1px solid var(--line);font-size:.92rem;text-ali
 <option>เพิ่มเติม</option>
 </select>
 
-<label>Systolic (เลขบน)</label>
+<label>SYS (เลขบน)</label>
 <input type="number" inputmode="numeric" id="sys">
-<label>Diastolic (เลขล่าง)</label>
+
+<label>DIA (เลขล่าง)</label>
 <input type="number" inputmode="numeric" id="dia">
-<label>Pulse (ชีพจร / เลขกลาง)</label>
+
+<label>PULSE (ชีพจร)</label>
 <input type="number" inputmode="numeric" id="pulse">
 
-<label>สถานที่วัด</label>
+<label>Location</label>
 <select id="location">
 <option>Home</option>
 <option>Clinic</option>
@@ -105,12 +74,11 @@ th,td{padding:10px;border-bottom:1px solid var(--line);font-size:.92rem;text-ali
 <label>พักก่อนวัด</label>
 <select id="rest">
 <option>พัก 5 นาทีขึ้นไป</option>
-<option>&lt; 5 min</option>
+<option>พักไม่ถึง 5 นาที</option>
 <option>ไม่ได้พักก่อนวัด</option>
 </select>
 
-
-<label>ท่าทางก่อนวัด</label>
+<label>ท่าทาง</label>
 <select id="posture">
 <option>นั่ง</option>
 <option>ยืน</option>
@@ -118,179 +86,195 @@ th,td{padding:10px;border-bottom:1px solid var(--line);font-size:.92rem;text-ali
 <option>อื่น ๆ</option>
 </select>
 
-<label>บริบทก่อนวัด</label>
-<select id="contextType">
+<label>บริบท</label>
+<select id="context">
 <option>ปกติ</option>
 <option>เดิน / รีบ</option>
-<option>ขึ้นบันได / ออกแรง</option>
 <option>หลังอาหาร</option>
-<option>เครียด / กังวล</option>
 <option>ดื่มชา / กาแฟ</option>
+<option>เครียด / กังวล</option>
 <option>อื่น ๆ</option>
 </select>
 
-<label>รายละเอียดเพิ่มเติม (ถ้ามี)</label>
-<textarea id="note" placeholder="พิมพ์เพิ่มได้เมื่อจำเป็น"></textarea>
-
+<label>Note</label>
+<textarea id="note"></textarea>
 
 <button onclick="saveReading()">Save Reading</button>
+
+</div>
+
+<div class="card">
+<h3>Monitoring Notes</h3>
+<div id="monitorInfo">
+ยังไม่มีข้อมูล
+</div>
+
+<button class="danger" style="margin-top:12px" onclick="resetAll()">Reset All</button>
 </div>
 
 </div>
 
-
-<div class="card" style="margin-top:16px">
-<h2>Report Filter</h2>
-<label>แหล่งข้อมูลสำหรับดู Graph / Report</label>
-<select id="reportFilter">
-<option value="Home">Home only</option>
-<option value="Clinic">Clinic only</option>
-<option value="Hospital">Hospital only</option>
-<option value="all">All sources</option>
-</select>
-<div class="muted" style="margin-top:8px">
-Graph และ report จะใช้ข้อมูลตาม filter นี้
-</div>
-</div>
-<div class="card" style="margin-top:16px">
-<h2>Timeline / Log</h2>
-<div class="table-wrap">
-<table id="table">
+<div class="card">
+<h3>Evidence Table</h3>
+<div class="tablewrap">
+<table>
 <thead>
 <tr>
-<th>Date/Time</th><th>ครั้ง</th><th>BP</th><th>Pulse</th><th>Location</th><th>Rest</th><th>Posture</th><th>Context</th><th>Note</th><th>Flag</th><th>Delete</th>
+<th>ID</th>
+<th>Date/Time</th>
+<th>BP</th>
+<th>Flag</th>
+<th>Context</th>
+<th>Note</th>
+<th>Delete</th>
 </tr>
 </thead>
-<tbody></tbody>
+<tbody id="tbody"></tbody>
 </table>
 </div>
-<div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:14px">
-<button class="secondary" onclick="generateReport()">Generate Report</button>
-<button style="background:#dc2626" onclick="resetData()">Reset Data</button>
-</div>
-<div id="report" style="margin-top:16px;white-space:pre-wrap"></div>
-<div class="footer">
-ข้อมูลเก็บใน browser เครื่องนี้เท่านั้น • เว็บนี้ใช้จัดระเบียบข้อมูลและสร้างรายงาน ไม่ใช่ระบบวินิจฉัยโรค
 </div>
 
-<div class="card" style="margin-top:16px">
-<h2>Cloud Sync (Prototype)</h2>
-<div class="muted">ตั้งรหัสครอบครัวเพื่อใช้เชื่อมข้อมูลระหว่างน้าและแม่ (จะใช้ตอนเปิด cloud sync จริง) (v0.2 architecture placeholder)</div>
-<label>Patient / Family Code</label>
-<input type="text" id="familyCode" placeholder="ตั้งชื่อรหัสครอบครัวเอง เช่น NAA-001 หรือ MomAuntBP">
-<button onclick="saveFamilyCode()">Save Code</button>
-<div id="syncStatus" style="margin-top:10px"></div>
 </div>
 
 <script>
-function saveFamilyCode(){
- let code=document.getElementById("familyCode").value;
- localStorage.setItem("familyCode",code);
- document.getElementById("syncStatus").innerText=
- code ? "Family code saved • ready for cloud sync setup" : "";
+const tbody=document.getElementById('tbody');
+const monitorInfo=document.getElementById('monitorInfo');
+let undoCache=null;
+
+function gid(id){
+ return document.getElementById(id);
 }
-document.addEventListener("DOMContentLoaded",()=>{
- let code=localStorage.getItem("familyCode")||"";
- if(document.getElementById("familyCode")) document.getElementById("familyCode").value=code;
-});
-</script>
 
-</div>
-</div>
-
-<script>
-const tbody=document.querySelector("#table tbody");
-
-function load(){
- let data=JSON.parse(localStorage.getItem("bpData")||"[]");
- render(data);
+function createID(){
+ return 'BP-'+Date.now();
 }
+
+function numericFlag(sys,dia){
+ if(sys<100 || dia<60){
+   return {label:'Low-range reading',color:'#dbeafe'};
+ }
+ if(sys>=140 || dia>=90){
+   return {label:'Hypertension-range reading',color:'#fed7aa'};
+ }
+ if(sys>=120 || dia>=80){
+   return {label:'Elevated-range reading',color:'#fef3c7'};
+ }
+ return {label:'Normal-range',color:'#dcfce7'};
+}
+
+function contextFlags(r){
+ let f=[];
+ if(r.rest==='พักไม่ถึง 5 นาที') f.push('Rest <5 min');
+ if(r.rest==='ไม่ได้พักก่อนวัด') f.push('No pre-rest');
+ if(r.location!=='Home') f.push(r.location);
+ if(r.context!=='ปกติ') f.push(r.context);
+ return f;
+}
+
 function saveReading(){
- const r={
-  date:date.value,time:time.value,round:round.value,sys:+sys.value,dia:+dia.value,
-  pulse:pulse.value,location:location.value,rest:rest.value,posture:posture.value,contextType:contextType.value,note:note.value
+ let data=JSON.parse(localStorage.getItem('bpData')||'[]');
+
+ let r={
+  id:createID(),
+  date:gid('date').value,
+  time:gid('time').value,
+  round:gid('round').value,
+  sys:+gid('sys').value,
+  dia:+gid('dia').value,
+  pulse:gid('pulse').value,
+  location:gid('location').value,
+  rest:gid('rest').value,
+  posture:gid('posture').value,
+  context:gid('context').value,
+  note:gid('note').value
  };
- if(!r.date||!r.sys||!r.dia){alert("กรอกวันที่และ BP");return;}
- let data=JSON.parse(localStorage.getItem("bpData")||"[]");
+
+ if(!r.date||!r.sys||!r.dia){
+   alert('กรอก Date / SYS / DIA');
+   return;
+ }
+
  data.unshift(r);
- localStorage.setItem("bpData",JSON.stringify(data));
- render(data);
+ localStorage.setItem('bpData',JSON.stringify(data));
+ render();
 }
 
-function readingFlag(sys,dia){
- if(sys<100 || dia<60) return {label:"Low reading range", color:"#dbeafe"};
- if(sys>=140 || dia>=90) return {label:"High reading range", color:"#fed7aa"};
- if(sys>=120 || dia>=80) return {label:"Elevated range", color:"#fef3c7"};
- return {label:"Within normal range", color:"#dcfce7"};
-}
-function deleteRow(idx){
- let data=JSON.parse(localStorage.getItem("bpData")||"[]");
- if(confirm("ลบรายการนี้หรือไม่?")){
-   data.splice(idx,1);
-   localStorage.setItem("bpData",JSON.stringify(data));
-   render(data);
+function deleteRow(id){
+ let data=JSON.parse(localStorage.getItem('bpData')||'[]');
+ let deleted=data.find(x=>x.id===id);
+ if(confirm('ลบรายการนี้หรือไม่?')){
+   undoCache=deleted;
+   data=data.filter(x=>x.id!==id);
+   localStorage.setItem('bpData',JSON.stringify(data));
+   render();
+   showUndo();
  }
 }
-function render(data){
- tbody.innerHTML="";
- let s=0,d=0,c=0;
- data.forEach((r,idx)=>{
-  let flag=readingFlag(r.sys,r.dia);
-  let id='BP-'+String(idx+1).padStart(3,'0');
-  tbody.innerHTML+=`<tr style="background:${flag.color}">
-  <td>${r.date} ${r.time||""}</td>
-  <td>${r.round||"-"}</td>
-  <td><span class="badge">${r.sys}/${r.dia}</span></td>
-  <td>${r.pulse||"-"}</td>
-  <td>${r.location}</td>
-  <td>${r.rest}</td>
-  <td>${r.posture||"-"}</td>
-  <td>${r.contextType||"-"}</td>
-  <td>${(r.note||"-")}<br><small>${id}</small></td>
-  <td>${flag.label}</td>
-  <td><button style="background:#dc2626;padding:6px 10px;width:auto" onclick="deleteRow(${idx})">ลบ</button></td>
-  </tr>`;
-  if(r.sys&&r.dia){s+=+r.sys;d+=+r.dia;c++;}
+
+function showUndo(){
+ monitorInfo.innerHTML += `
+ <div style="margin-top:12px">
+ <button onclick="undoDelete()">Undo Delete</button>
+ </div>`;
+}
+
+function undoDelete(){
+ if(!undoCache) return;
+ let data=JSON.parse(localStorage.getItem('bpData')||'[]');
+ data.unshift(undoCache);
+ localStorage.setItem('bpData',JSON.stringify(data));
+ undoCache=null;
+ render();
+}
+
+function render(){
+ let data=JSON.parse(localStorage.getItem('bpData')||'[]');
+ tbody.innerHTML='';
+
+ data.forEach(r=>{
+   let nf=numericFlag(r.sys,r.dia);
+   let cf=contextFlags(r).join(' • ');
+
+   let prev=data.find(x=>x.date===r.date && x.time<r.time);
+   let auto='';
+   if(prev){
+      let t1=new Date('1970-01-01T'+prev.time);
+      let t2=new Date('1970-01-01T'+r.time);
+      let diff=(t2-t1)/60000;
+      auto=`Prev interval ${Math.round(diff)} min`;
+   }
+
+   tbody.innerHTML += `
+   <tr style="background:${nf.color}">
+   <td>${r.id}</td>
+   <td>${r.date}<br>${r.time||''}</td>
+   <td>${r.sys}/${r.dia}<br><small>${r.pulse||''}</small></td>
+   <td>${nf.label}<br><small>${cf}</small></td>
+   <td>${r.location}<br><small>${r.rest}</small></td>
+   <td>${r.note||'-'}<br><small>${auto}</small></td>
+   <td><button class="danger" onclick="deleteRow('${r.id}')">ลบ</button></td>
+   </tr>`;
  });
- if(c){avgDisplay.innerText=Math.round(s/c)+" / "+Math.round(d/c);}
- countDisplay.innerText=c+" readings";
-}
 
-function generateReport(){
- let data=JSON.parse(localStorage.getItem("bpData")||"[]");
- let filter=document.getElementById("reportFilter").value;
- if(filter!=="all"){ data=data.filter(r=>r.location===filter); }
- if(!data.length){report.innerHTML="ยังไม่มีข้อมูล";return;}
- let s=0,d=0;
- data.forEach(r=>{s+=+r.sys; d+=+r.dia;});
- let avgS=Math.round(s/data.length), avgD=Math.round(d/data.length);
- let rows=data.map(r=>{
-  let flag=readingFlag(r.sys,r.dia);
-  return `<tr style="background:${flag.color}">
-  <td>${r.date}</td><td>${r.time||""}</td><td>${r.sys}/${r.dia}</td><td>${flag.label}</td><td>${r.location}</td></tr>`;
- }).join("");
- report.innerHTML=`
- <div style="border:1px solid #ddd;border-radius:14px;padding:16px;background:#fff">
- <h3>Monitoring Dashboard</h3>
- <div><b>Source:</b> ${filter}</div>
- <div><b>Total readings:</b> ${data.length}</div>
- <div><b>Average:</b> ${avgS}/${avgD}</div>
- <div style="margin-top:14px"><b>Evidence Table</b></div>
- <table style="width:100%;border-collapse:collapse;margin-top:8px">
- <tr><th>Date</th><th>Time</th><th>BP</th><th>Flag</th><th>Location</th></tr>
- ${rows}
- </table></div>`;
-}
-function resetData(){
- if(confirm("ลบข้อมูลทั้งหมดในเครื่องนี้หรือไม่?")){
-   localStorage.removeItem("bpData");
-   render([]);
-   report.innerText="";
+ if(data.length){
+   monitorInfo.innerHTML=`
+   <b>Total readings:</b> ${data.length}<br>
+   <b>Latest:</b> ${data[0].sys}/${data[0].dia}<br>
+   <small>Phase 1 = monitoring foundation</small>`;
+ }else{
+   monitorInfo.innerHTML='ยังไม่มีข้อมูล';
  }
 }
-date.valueAsDate=new Date();
 
-load();
+function resetAll(){
+ if(confirm('ลบข้อมูลทั้งหมดหรือไม่?')){
+   localStorage.removeItem('bpData');
+   render();
+ }
+}
+
+gid('date').valueAsDate=new Date();
+render();
 </script>
 </body>
 </html>
