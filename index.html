@@ -57,19 +57,26 @@ th,td{padding:10px;border-bottom:1px solid #eee;text-align:left;font-size:.9rem}
 </select>
 
 <label>SYS (เลขบน)</label>
-<input type="number" id="sys">
+<input type="number" id="sys" inputmode="numeric" pattern="[0-9]*">
 
 <label>DIA (เลขล่าง)</label>
-<input type="number" id="dia">
+<input type="number" id="dia" inputmode="numeric" pattern="[0-9]*">
 
 <label>PULSE (ชีพจร)</label>
-<input type="number" id="pulse">
+<input type="number" id="pulse" inputmode="numeric" pattern="[0-9]*">
 
 <label>Location</label>
 <select id="location">
 <option>Home</option>
 <option>อื่น ๆ</option>
 <option>Hospital</option>
+</select>
+
+<label>Medication</label>
+<select id="medication">
+<option>ทานยา</option>
+<option>ไม่ทานยา</option>
+<option>ไม่แน่ใจ</option>
 </select>
 
 <label>Rest</label>
@@ -125,12 +132,21 @@ th,td{padding:10px;border-bottom:1px solid #eee;text-align:left;font-size:.9rem}
 <table>
 <thead>
 <tr>
-<th>Date/Time</th><th>BP</th><th>Pulse</th><th>Location</th><th>Session</th><th>Note</th>
+<th>Date/Time</th><th>BP</th><th>Pulse</th><th>Location</th><th>Medication</th><th>Session</th><th>Note</th><th>Delete</th>
 </tr>
 </thead>
 <tbody id="tbody"></tbody>
 </table>
-</div></div>
+<div style="margin-top:10px;padding:10px;border:1px solid #ddd;border-radius:10px;background:#fafafa;font-size:.9rem">
+<b>Flag Reference</b><br>
+🔵 Low-range reading = ตัวเลขอยู่ในช่วงความดันต่ำ<br>
+🟢 Normal-range = ตัวเลขอยู่ในช่วงปกติ<br>
+🟡 Elevated-range reading = ตัวเลขสูงกว่าปกติ<br>
+🟠 Hypertension-range reading = ตัวเลขอยู่ในช่วงค่าความดันสูง<br><br>
+<small>Flag ใช้ช่วยอ่านและจัดกลุ่มค่าความดัน ไม่ใช่การวินิจฉัยโรค</small>
+</div>
+</div>
+</div>
 
 <div class="card">
 <h3>Session Timeline</h3>
@@ -177,6 +193,7 @@ function saveReading(){
   dia:+gid('dia').value,
   pulse:gid('pulse').value,
   location:gid('location').value,
+  medication:gid('medication').value,
   rest:gid('rest').value,
   context:gid('context').value,
   note:gid('note').value
@@ -286,15 +303,16 @@ function renderTable(data){
  tbody.innerHTML='';
 
  data.forEach(r=>{
-
   tbody.innerHTML+=`
   <tr>
   <td>${r.date}<br>${r.time}</td>
   <td>${r.sys}/${r.dia}</td>
   <td>${r.pulse||''}</td>
   <td>${r.location}</td>
+  <td>${r.medication||''}</td>
   <td>${r.session} #${r.round}</td>
   <td>${r.note||''}</td>
+  <td><button onclick="deleteReading('${r.id}')">🗑️</button></td>
   </tr>`;
  });
 }
@@ -346,9 +364,27 @@ function saveGraphImage(){
  a.click();
 }
 
+
+function deleteReading(id){
+ if(!confirm('ลบรายการนี้?')) return;
+ let data=JSON.parse(localStorage.getItem('bpData')||'[]');
+ data=data.filter(x=>x.id!==id);
+ localStorage.setItem('bpData',JSON.stringify(data));
+ renderAll();
+}
+
 gid('date').valueAsDate=new Date();
 renderAll();
 </script>
+
+<div style="margin-top:12px;font-size:.85rem;color:#666">
+<b>Flag Reference</b>:
+Low-range = ตัวเลขอยู่ในช่วงความดันต่ำ |
+Normal-range = ตัวเลขอยู่ในช่วงปกติ |
+Elevated-range = ตัวเลขสูงกว่าปกติ |
+Hypertension-range = ตัวเลขอยู่ในช่วงค่าความดันสูง
+<br><small>Flag ใช้ช่วยอ่านข้อมูล ไม่ใช่การวินิจฉัยโรค</small>
+</div>
 
 </body>
 </html>
