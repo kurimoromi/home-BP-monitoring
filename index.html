@@ -24,7 +24,7 @@ th,td{padding:10px;border-bottom:1px solid #eee;text-align:left;font-size:.9rem}
 <body>
 <header>
 <b>BP Monitor – Phase 2</b><br>
-<small>Monitoring Workspace</small>
+<small>Monitoring Workspace</small><div id='familyBadge' style='float:right;font-size:.85rem'>Family: Not Connected</div>
 </header>
 
 <div class="container">
@@ -394,6 +394,39 @@ function deleteReading(id){
 
 gid('date').valueAsDate=new Date();
 renderAll();
+</script>
+
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-app.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyBbA_HXqmOIKJrJ8D12tlk7d_vUXaVsi0E",
+  authDomain: "bp-monitor-family.firebaseapp.com",
+  projectId: "bp-monitor-family",
+  storageBucket: "bp-monitor-family.firebasestorage.app",
+  messagingSenderId: "456193142332",
+  appId: "1:456193142332:web:162bd74937e14a0fd39d39",
+  measurementId: "G-B09XW0E71X"
+};
+
+initializeApp(firebaseConfig);
+
+let familyCode = localStorage.getItem('familyCode');
+
+if(!familyCode){
+  familyCode = prompt('กรอก Family Code เช่น RABB-559');
+  if(familyCode){
+    localStorage.setItem('familyCode', familyCode);
+  }
+}
+
+window.addEventListener('load',()=>{
+ const badge=document.getElementById('familyBadge');
+ if(badge && familyCode){
+   badge.textContent='Family: '+familyCode;
+ }
+});
 </script>
 
 </body>
