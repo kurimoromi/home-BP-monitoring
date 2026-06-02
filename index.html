@@ -51,7 +51,10 @@ th,td{padding:10px;border-bottom:1px solid #eee;text-align:left;font-size:.9rem}
 <label>Date</label>
 <input type="date" id="date">
 
-<label>Time</label>
+<label>Time 
+    <button type="button" id="minus5Btn" style="width:auto;padding:4px 8px;margin-left:8px">−5m</button>
+    <button type="button" id="plus5Btn" style="width:auto;padding:4px 8px">+5m</button>
+    </label>
 <input type="time" id="time" onchange="autoSession()">
 
 <label>Session</label>
@@ -530,6 +533,26 @@ async function bootSync(){
 }
 
 window.addEventListener('load', bootSync);
+</script>
+
+
+<script>
+window.addEventListener('load',()=>{
+ const plus=document.getElementById('plus5Btn');
+ const minus=document.getElementById('minus5Btn');
+
+ function shift(mins){
+   const t=gid('time').value;
+   if(!t) return;
+   let [h,m]=t.split(':').map(Number);
+   let d=new Date();
+   d.setHours(h,m+mins,0,0);
+   gid('time').value=d.toTimeString().slice(0,5);
+ }
+
+ plus?.addEventListener('click',()=>shift(5));
+ minus?.addEventListener('click',()=>shift(-5));
+});
 </script>
 
 </body>
