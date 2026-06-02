@@ -24,8 +24,22 @@ th,td{padding:10px;border-bottom:1px solid #eee;text-align:left;font-size:.9rem}
 <body>
 <header>
 <b>BP Monitor – Phase 2</b><br>
-<small>Monitoring Workspace</small><div id='familyBadge' style='float:right;font-size:.85rem'>Family: Not Connected</div>
+<small>Monitoring Workspace</small>
+<div style="float:right;font-size:.85rem;display:flex;gap:8px;align-items:center">
+<span id="familyBadge">Family: Not Connected</span>
+<button id="copyFamilyBtn" style="width:auto;padding:6px 10px">📋</button>
+</div>
 </header>
+
+
+<div id="familySetup" style="position:fixed;inset:0;background:rgba(0,0,0,.45);display:none;align-items:center;justify-content:center;z-index:9999">
+<div style="background:#fff;padding:20px;border-radius:16px;width:min(90vw,420px)">
+<h3>Family Code</h3>
+<p>กรอกรหัสครอบครัว เช่น RABB-559</p>
+<input id="familyCodeInput" placeholder="RABB-559">
+<button id="familyContinueBtn" style="margin-top:12px">Continue</button>
+</div>
+</div>
 
 <div class="container">
 
@@ -399,6 +413,7 @@ renderAll();
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-app.js";
+import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-auth.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyBbA_HXqmOIKJrJ8D12tlk7d_vUXaVsi0E",
@@ -410,22 +425,35 @@ const firebaseConfig = {
   measurementId: "G-B09XW0E71X"
 };
 
-initializeApp(firebaseConfig);
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+signInAnonymously(auth).catch(console.error);
 
-let familyCode = localStorage.getItem('familyCode');
-
-if(!familyCode){
-  familyCode = prompt('กรอก Family Code เช่น RABB-559');
-  if(familyCode){
-    localStorage.setItem('familyCode', familyCode);
-  }
+function updateFamilyUI(){
+ const code = localStorage.getItem('familyCode');
+ const badge = document.getElementById('familyBadge');
+ if(badge && code) badge.textContent='Family: '+code;
 }
 
 window.addEventListener('load',()=>{
- const badge=document.getElementById('familyBadge');
- if(badge && familyCode){
-   badge.textContent='Family: '+familyCode;
- }
+ let code = localStorage.getItem('familyCode');
+ const modal=document.getElementById('familySetup');
+ if(!code){ modal.style.display='flex'; }
+ else { updateFamilyUI(); }
+
+ document.getElementById('familyContinueBtn')?.addEventListener('click',()=>{
+   const v=document.getElementById('familyCodeInput').value.trim();
+   if(!v) return alert('กรุณากรอก Family Code');
+   localStorage.setItem('familyCode',v);
+   updateFamilyUI();
+   modal.style.display='none';
+ });
+
+ document.getElementById('copyFamilyBtn')?.addEventListener('click',()=>{
+   const code=localStorage.getItem('familyCode')||'';
+   navigator.clipboard.writeText(code);
+   alert('คัดลอก Family Code แล้ว');
+ });
 });
 </script>
 
