@@ -20,7 +20,25 @@ table{width:100%;border-collapse:collapse}
 th,td{padding:10px;border-bottom:1px solid #eee;text-align:left;font-size:.9rem}
 .session{border-left:4px solid #2563eb;padding-left:10px;margin-bottom:12px}.icon-delete{background:transparent!important;color:#666!important;border:none!important;padding:0!important;width:auto!important;cursor:pointer;font-size:16px}
 </style>
-<script src="https://cdn.jsdelivr.net/npm/html2canvas"></script></head>
+<script src="https://cdn.jsdelivr.net/npm/html2canvas"></script>
+<style>
+.roundBtn{
+ padding:10px 18px;
+ border:none;
+ border-radius:10px;
+ background:#e5e7eb;
+ color:#222;
+ font-weight:600;
+ min-width:52px;
+}
+.roundBtn.activeRound{
+ background:#2563eb !important;
+ color:#fff !important;
+ box-shadow:0 0 0 2px rgba(37,99,235,.15);
+}
+</style>
+
+</head>
 <body>
 <header>
 <b>BP Monitor – Phase 2</b><br>
@@ -570,20 +588,7 @@ window.addEventListener('load',()=>{
    });
  });
 
- // sort oldest first + no table clipping
- if(typeof renderTable==='function'){
-   const oldRenderTable=renderTable;
-   renderTable=function(){
-      oldRenderTable();
-      const tbody=document.querySelector('#evidenceTable tbody');
-      if(!tbody) return;
-      const rows=[...tbody.querySelectorAll('tr')];
-      rows.reverse();
-      rows.forEach(r=>tbody.appendChild(r));
-   }
- }
-
- // chart export extra padding
+  // chart export extra padding
  if(window.chart && chart.options && chart.options.layout){
     chart.options.layout.padding={right:40,left:10,top:20,bottom:20};
     chart.update();
@@ -596,6 +601,24 @@ window.addEventListener('load',()=>{
  color:#fff !important;
 }
 </style>
+
+
+<script>
+window.addEventListener('load',()=>{
+  setTimeout(()=>{
+    const tbody=document.querySelector('#evidenceTable tbody');
+    if(tbody){
+      const rows=[...tbody.querySelectorAll('tr')];
+      rows.sort((a,b)=>{
+        const ta=a.innerText.trim();
+        const tb=b.innerText.trim();
+        return ta.localeCompare(tb);
+      });
+      rows.forEach(r=>tbody.appendChild(r));
+    }
+  },800);
+});
+</script>
 
 </body>
 </html>
