@@ -75,31 +75,56 @@ th,td{padding:10px;border-bottom:1px solid #eee;text-align:left;font-size:.9rem}
 
 
 <style>
-/* v1.3 real layout expansion */
-@media (min-width:900px){
-  .top-section,
-  .main-section,
-  .workspace-grid,
-  .top-grid{
-    display:grid!important;
-    grid-template-columns:32% 68%!important;
-    gap:18px!important;
-    align-items:start!important;
-  }
-
-  .monitoring-dashboard,
-  .dashboard-card{
-    width:100%!important;
-    max-width:none!important;
-  }
-
-  .monitoring-dashboard canvas,
-  #bpChart{
-    width:100%!important;
-    min-height:360px!important;
+/* HARD dashboard expansion */
+@media (min-width:700px){
+  .monitoring-dashboard{
+      min-width:520px!important;
+      flex:1.6!important;
   }
 }
+
+/* chart wrapper only */
+#bpChart{
+  width:100%!important;
+  height:360px!important;
+}
 </style>
+
+<script>
+window.addEventListener('load',()=>{
+
+ if(window.chart){
+
+    // live graph ROOT FIX
+    chart.options.maintainAspectRatio=false;
+
+    chart.options.layout = {
+      padding:{
+        top:45,
+        right:220,
+        left:35,
+        bottom:75
+      }
+    };
+
+    if(chart.options.plugins && chart.options.plugins.datalabels){
+      chart.options.plugins.datalabels.clip=false;
+      chart.options.plugins.datalabels.clamp=false;
+      chart.options.plugins.datalabels.align=function(ctx){
+          const last=ctx.dataset.data.length-1;
+          return ctx.dataIndex===last ? 'left' : 'top';
+      };
+      chart.options.plugins.datalabels.offset=function(ctx){
+          const last=ctx.dataset.data.length-1;
+          return ctx.dataIndex===last ? 28 : 6;
+      };
+    }
+
+    chart.resize();
+    chart.update();
+ }
+});
+</script>
 
 </head>
 <body>
@@ -967,47 +992,6 @@ window.addEventListener('load',()=>{
 
    chart.resize();
    chart.update();
- }
-
-});
-</script>
-
-
-<script>
-window.addEventListener('load',()=>{
-
- if(window.chart){
-
-    // Live graph wider + breathing room
-    chart.options.maintainAspectRatio=false;
-    chart.options.layout = {
-      padding:{
-        top:40,
-        right:170,
-        left:30,
-        bottom:65
-      }
-    };
-
-    // only last label move inward
-    if(chart.options.plugins && chart.options.plugins.datalabels){
-      chart.options.plugins.datalabels = {
-        ...chart.options.plugins.datalabels,
-        clip:false,
-        clamp:false,
-        align:(ctx)=>{
-          const last=ctx.dataset.data.length-1;
-          return ctx.dataIndex===last ? 'left' : 'top';
-        },
-        offset:(ctx)=>{
-          const last=ctx.dataset.data.length-1;
-          return ctx.dataIndex===last ? 22 : 6;
-        }
-      };
-    }
-
-    chart.resize();
-    chart.update();
  }
 
 });
