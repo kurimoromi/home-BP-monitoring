@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="th">
 <head>
@@ -37,8 +38,9 @@ th,td{padding:10px;border-bottom:1px solid #eee;text-align:left;font-size:.9rem}
 }
 </style>
 
+
 <style>
-/* คงดีไซน์ดั้งเดิมของระบบไว้ ห้ามสลับหรือย้าย UX */
+/* v1.3 layout expansion */
 @media (min-width: 900px){
   .main-grid, .top-grid, .dashboard-grid{
     display:grid !important;
@@ -46,18 +48,34 @@ th,td{padding:10px;border-bottom:1px solid #eee;text-align:left;font-size:.9rem}
     gap:18px !important;
     align-items:start;
   }
+
   .monitoring-dashboard,
   .dashboard-card{
     width:100% !important;
     max-width:none !important;
   }
 }
+
+</style>
+
+
+<style>
+/* safer v1.3 dashboard sizing */
 @media (min-width:900px){
   .monitoring-dashboard,.dashboard-card{
     width:100%!important;
     max-width:none!important;
   }
+  #bpChart{
+    max-width:100%!important;
+    height:320px!important;
+  }
 }
+</style>
+
+
+<style>
+/* HARD dashboard expansion */
 @media (min-width:700px){
   .monitoring-dashboard{
       min-width:520px!important;
@@ -65,13 +83,49 @@ th,td{padding:10px;border-bottom:1px solid #eee;text-align:left;font-size:.9rem}
   }
 }
 
-/* [FIX] ควบคุมขนาดกราฟไม่ให้เบียดตัวหนังสือจนแดชบอร์ดเละ */
-#chart{
+/* chart wrapper only */
+#bpChart{
   width:100%!important;
-  height:340px!important;
-  display:block!important;
+  height:360px!important;
 }
 </style>
+
+<script>
+window.addEventListener('load',()=>{
+
+ if(window.chart){
+
+    // live graph ROOT FIX
+    chart.options.maintainAspectRatio=false;
+
+    chart.options.layout = {
+      padding:{
+        top:45,
+        right:220,
+        left:35,
+        bottom:75
+      }
+    };
+
+    if(chart.options.plugins && chart.options.plugins.datalabels){
+      chart.options.plugins.datalabels.clip=false;
+      chart.options.plugins.datalabels.clamp=false;
+      chart.options.plugins.datalabels.align=function(ctx){
+          const last=ctx.dataset.data.length-1;
+          return ctx.dataIndex===last ? 'left' : 'top';
+      };
+      chart.options.plugins.datalabels.offset=function(ctx){
+          const last=ctx.dataset.data.length-1;
+          return ctx.dataIndex===last ? 28 : 6;
+      };
+    }
+
+    chart.resize();
+    chart.update();
+ }
+});
+</script>
+
 </head>
 <body>
 <header>
@@ -83,6 +137,7 @@ th,td{padding:10px;border-bottom:1px solid #eee;text-align:left;font-size:.9rem}
 </div>
 </header>
 
+
 <div id="familySetup" style="position:fixed;inset:0;background:rgba(0,0,0,.45);display:none;align-items:center;justify-content:center;z-index:9999">
 <div style="background:#fff;padding:20px;border-radius:16px;width:min(90vw,420px)">
 <h3>Family Code</h3>
@@ -93,6 +148,7 @@ th,td{padding:10px;border-bottom:1px solid #eee;text-align:left;font-size:.9rem}
 </div>
 
 <div class="container">
+
 <div class="grid">
 
 <div class="card">
@@ -111,17 +167,20 @@ th,td{padding:10px;border-bottom:1px solid #eee;text-align:left;font-size:.9rem}
 <label>Session</label>
 <select id="session">
 <option>เช้า</option>
+
 <option>กลางคืน</option>
 <option>อื่น ๆ</option>
 </select>
 
 <label>Round</label>
+
 <div id="roundButtons" style="display:flex;gap:8px;margin-top:6px">
 <button type="button" class="roundBtn activeRound" data-round="1">1</button>
 <button type="button" class="roundBtn" data-round="2">2</button>
 <button type="button" class="roundBtn" data-round="3">3</button>
 <input type="hidden" id="round" value="1">
 </div>
+
 
 <label>SYS (เลขบน)</label>
 <input type="number" id="sys" inputmode="numeric" pattern="[0-9]*">
@@ -183,6 +242,8 @@ th,td{padding:10px;border-bottom:1px solid #eee;text-align:left;font-size:.9rem}
 <div id="dashboard"></div>
 <canvas id="chart" height="220"></canvas>
 
+
+
 <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:12px">
 <button onclick="saveReportImage()">Save Report Image</button>
 <button onclick="saveGraphImage()">Save Graph</button>
@@ -216,6 +277,7 @@ th,td{padding:10px;border-bottom:1px solid #eee;text-align:left;font-size:.9rem}
 <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels"></script>
 <script>
 function gid(x){return document.getElementById(x)}
+
 function createID(){ return 'BP-'+Date.now(); }
 
 function numericFlag(sys,dia){
@@ -224,6 +286,7 @@ function numericFlag(sys,dia){
  if(sys>=120 || dia>=80) return {label:'Elevated',color:'#fef3c7'};
  return {label:'Normal',color:'#dcfce7'};
 }
+
 
 function autoSession(){
  let t=gid('time').value;
@@ -235,6 +298,7 @@ function autoSession(){
 
 function saveReading(){
  let data=window.bpDataCache||[];
+
  autoSession();
 
  let r={
@@ -259,12 +323,15 @@ function saveReading(){
  }
 
  data.unshift(r);
+ // cloud managed
+
  gid('sys').value='';
  gid('dia').value='';
  gid('pulse').value='';
  gid('note').value='';
  gid('context').selectedIndex=0;
  gid('rest').selectedIndex=0;
+
  renderAll();
 }
 
@@ -277,59 +344,9 @@ function filteredData(){
 
 let chartObj=null;
 
-function renderChart(data){
- let ctx=gid('chart');
- if(chartObj) chartObj.destroy();
-
- chartObj=new Chart(ctx,{
-  plugins:[ChartDataLabels],
-  type:'line',
-  options:{
-   responsive: true,
-   maintainAspectRatio: false,
-   layout:{
-    padding:{
-      top:35,
-      right:110, /* เผื่อขอบด้านขวากราฟในหน้าปกติ */
-      left:25,
-      bottom:45
-    }
-   },
-   plugins:{
-    datalabels:{
-      anchor:'end',
-      align: function(ctx) {
-          const last = ctx.dataset.data.length - 1;
-          return ctx.dataIndex === last ? 'left' : 'top';
-      },
-      offset: function(ctx) {
-          const last = ctx.dataset.data.length - 1;
-          return ctx.dataIndex === last ? 16 : 6;
-      },
-      clip: false,
-      clamp: false,
-      formatter:(v)=>v,
-      font:{size:10, weight:'bold'}
-    }
-   },
-   scales:{
-    y:{min:40,max:200}
-   }
-  },
-  data:{
-   labels:data.map(x=>x.date+' '+x.time).reverse(),
-   datasets:[
-    {label:'SYS',data:data.map(x=>x.sys).reverse(), clip:false},
-    {label:'DIA',data:data.map(x=>x.dia).reverse(), clip:false}
-   ]
-  }
- });
-
- window.chart = chartObj; /* ผูกลง Global Scope ให้ฟังก์ชันเซฟรูปเรียกใช้ได้แม่นยำ */
-}
-
 function renderAll(){
  let data=filteredData();
+
  renderDashboard(data);
  renderTimeline(data);
  renderTable(data);
@@ -341,11 +358,13 @@ function renderDashboard(data){
   gid('dashboard').innerHTML='ยังไม่มีข้อมูล';
   return;
  }
+
  let latest=data[0];
  gid('dashboard').innerHTML=`
  <div class="session">
  <b>Monitoring Period</b><br>
  ${data[data.length-1].date} → ${latest.date}<br><br>
+
  <b>Latest Reading</b><br>
  ${latest.sys}/${latest.dia}<br>
  ${latest.time}<br>
@@ -356,6 +375,7 @@ function renderDashboard(data){
 
 function renderTimeline(data){
  let groups={};
+
  data.forEach(r=>{
   let key=r.date+'-'+r.session;
   if(!groups[key]) groups[key]=[];
@@ -363,9 +383,12 @@ function renderTimeline(data){
  });
 
  let html='';
+
  Object.keys(groups).forEach(k=>{
   let arr=groups[k];
-  html+=`<div class="session"><b>${k}</b><br>`;
+  html+=`<div class="session">
+  <b>${k}</b><br>`;
+
   if(arr.length>=2){
     let sorted=arr.slice().sort((a,b)=>a.time.localeCompare(b.time));
     let closeFound=false;
@@ -378,17 +401,25 @@ function renderTimeline(data){
         break;
       }
     }
-    if(!closeFound){ html+=`No close pair yet<br>`; }
+    if(!closeFound){
+      html+=`No close pair yet<br>`;
+    }
   }
-  arr.forEach(r=>{ html+=`${r.time} • ${r.sys}/${r.dia}<br>`; });
+
+  arr.forEach(r=>{
+    html+=`${r.time} • ${r.sys}/${r.dia}<br>`;
+  });
+
   html+='</div>';
  });
+
  gid('timeline').innerHTML=html || 'ยังไม่มี session';
 }
 
 function renderTable(data){
  let tbody=gid('tbody');
  tbody.innerHTML='';
+
  data.forEach(r=>{
   tbody.innerHTML+=`
   <tr>
@@ -401,6 +432,37 @@ function renderTable(data){
   <td>${r.note||'-'}</td>
   <td><button class="icon-delete" onclick="deleteReading('${r.id}')">🗑️</button></td>
   </tr>`;
+ });
+}
+
+function renderChart(data){
+ let ctx=gid('chart');
+
+ if(chartObj) chartObj.destroy();
+
+ chartObj=new Chart(ctx,{
+  plugins:[ChartDataLabels],
+  type:'line',
+  options:{
+   plugins:{
+    datalabels:{
+      anchor:'end',
+      align:'top',
+      formatter:(v)=>v,
+      font:{size:10}
+    }
+   },
+   scales:{
+    y:{min:40,max:200}
+   }
+  },
+  data:{
+   labels:data.map(x=>x.date+' '+x.time).reverse(),
+   datasets:[
+    {label:'SYS',data:data.map(x=>x.sys).reverse()},
+    {label:'DIA',data:data.map(x=>x.dia).reverse()}
+   ]
+  }
  });
 }
 
@@ -417,51 +479,53 @@ function saveReportImage(){
  });
 }
 
-/* [FIX] ซ่อมแซมฟังก์ชันเซฟรูปกราฟสำหรับ iPhone โดยการขยายสัดส่วน Padding ป้องกันขอบตัวอักษรโดนสับขาด */
-async function saveGraphImage(){
- let c = document.getElementById('chart');
- if(!window.chart) return;
-
- const oldPad = window.chart.options.layout?.padding;
- 
- window.chart.options.layout = {
-    padding: { top: 60, right: 180, left: 40, bottom: 60 }
- };
- window.chart.update();
-
- await new Promise(r => setTimeout(r, 400));
-
- let bg = document.createElement('canvas');
- bg.width = c.width;
- bg.height = c.height;
- let ctx = bg.getContext('2d');
- ctx.fillStyle = '#ffffff';
+function saveGraphImage(){
+ let c=document.getElementById('chart');
+ let bg=document.createElement('canvas');
+ bg.width=c.width;
+ bg.height=c.height;
+ let ctx=bg.getContext('2d');
+ ctx.fillStyle='#ffffff';
  ctx.fillRect(0,0,bg.width,bg.height);
  ctx.drawImage(c,0,0);
-
- let a = document.createElement('a');
- a.download = 'BP_Graph.png';
- a.href = bg.toDataURL('image/png');
+ let a=document.createElement('a');
+ a.download='BP_Graph.png';
+ a.href=bg.toDataURL('image/png');
  a.click();
-
- window.chart.options.layout.padding = oldPad;
- window.chart.update();
 }
 
-window.addEventListener('load',()=>{
- document.querySelectorAll('.roundBtn').forEach(btn=>{
-   btn.addEventListener('click',()=>{
-      document.querySelectorAll('.roundBtn').forEach(b=>b.classList.remove('activeRound'));
-      btn.classList.add('activeRound');
-      gid('round').value=btn.dataset.round;
-   });
+
+function deleteReading(id){
+ if(!confirm('ลบรายการนี้?')) return;
+ let data=window.bpDataCache||[];
+ data=data.filter(x=>x.id!==id);
+ // cloud managed
+ renderAll();
+}
+
+
+(function migrateLegacyRecords(){
+ let data=window.bpDataCache||[];
+ let changed=false;
+ data.forEach((r,i)=>{
+   if(!r.id){
+     r.id='LEGACY-'+i+'-'+Date.now();
+     changed=true;
+   }
  });
-});
+ if(changed){
+   // cloud managed
+ }
+})();
 
 gid('date').valueAsDate=new Date();
+renderAll();
 </script>
 
-<!-- Firebase Module -->
+
+
+
+
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-app.js";
 import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-auth.js";
@@ -485,16 +549,20 @@ window.bpDataCache = [];
 async function bootSync(){
  try{
    await signInAnonymously(auth);
+
    let familyCode = localStorage.getItem('familyCode');
    const badge = document.getElementById('familyBadge');
    const modal = document.getElementById('familySetup');
 
    function setBadge(){
-     if(badge && familyCode){ badge.textContent = 'Family: ' + familyCode; }
+     if(badge && familyCode){
+       badge.textContent = 'Family: ' + familyCode;
+     }
    }
 
    function connect(code){
       const q=query(collection(db,'families',code,'readings'),orderBy('createdAt','desc'));
+
       onSnapshot(q,(snap)=>{
          const cloud=snap.docs.map(d=>({id:d.id,...d.data()}));
          window.bpDataCache=cloud;
@@ -526,16 +594,21 @@ async function bootSync(){
               context: gid('context').value,
               note: gid('note').value
             };
+
             if(!r.date || !r.sys || !r.dia){
               alert('กรอก Date / SYS / DIA');
               return;
             }
+
             await addDoc(collection(db,'families',code,'readings'), r);
+
             gid('sys').value='';
             gid('dia').value='';
             gid('pulse').value='';
             gid('note').value='';
+
           }catch(e){
+            console.error(e);
             alert('Save Error: '+e.message);
           }
         }
@@ -561,17 +634,22 @@ async function bootSync(){
       navigator.clipboard.writeText(familyCode||'');
       alert('คัดลอก Family Code แล้ว');
    });
+
  }catch(e){
+   console.error(e);
    alert('Firebase Boot Error: '+e.message);
  }
 }
+
 window.addEventListener('load', bootSync);
 </script>
+
 
 <script>
 window.addEventListener('load',()=>{
  const plus=document.getElementById('plus5Btn');
  const minus=document.getElementById('minus5Btn');
+
  function shift(mins){
    const t=gid('time').value;
    if(!t) return;
@@ -580,9 +658,344 @@ window.addEventListener('load',()=>{
    d.setHours(h,m+mins,0,0);
    gid('time').value=d.toTimeString().slice(0,5);
  }
+
  plus?.addEventListener('click',()=>shift(5));
  minus?.addEventListener('click',()=>shift(-5));
 });
 </script>
+
+
+<script>
+window.addEventListener('load',()=>{
+ // round buttons
+ document.querySelectorAll('.roundBtn').forEach(btn=>{
+   btn.addEventListener('click',()=>{
+      document.querySelectorAll('.roundBtn').forEach(b=>b.classList.remove('activeRound'));
+      btn.classList.add('activeRound');
+      gid('round').value=btn.dataset.round;
+   });
+ });
+
+  // chart export extra padding
+ if(window.chart && chart.options && chart.options.layout){
+    chart.options.layout.padding={right:40,left:10,top:20,bottom:20};
+    chart.update();
+ }
+});
+</script>
+<style>
+.activeRound{
+ background:#2f64e3 !important;
+ color:#fff !important;
+}
+</style>
+
+
+<script>
+window.addEventListener('load',()=>{
+  setTimeout(()=>{
+    const tbody=document.querySelector('#evidenceTable tbody');
+    if(tbody){
+      const rows=[...tbody.querySelectorAll('tr')];
+      rows.sort((a,b)=>{
+        const ta=a.innerText.trim();
+        const tb=b.innerText.trim();
+        return ta.localeCompare(tb);
+      });
+      rows.forEach(r=>tbody.appendChild(r));
+    }
+  },800);
+});
+</script>
+
+
+<script>
+window.addEventListener('load',()=>{
+
+  // Evidence table full height
+  const ev=document.querySelector('.evidence-table-container') || 
+           document.querySelector('#evidenceTable')?.parentElement;
+  if(ev){
+    ev.style.maxHeight='none';
+    ev.style.overflow='visible';
+  }
+
+  // Report export = temporarily expand full table
+  if(typeof saveReportImage==='function'){
+    const oldSave=saveReportImage;
+    saveReportImage=async function(){
+      const wrap=document.querySelector('.evidence-table-container') || 
+                 document.querySelector('#evidenceTable')?.parentElement;
+      const oldH=wrap?.style.maxHeight;
+      const oldO=wrap?.style.overflow;
+      if(wrap){
+        wrap.style.maxHeight='none';
+        wrap.style.overflow='visible';
+      }
+      await oldSave();
+      if(wrap){
+        wrap.style.maxHeight=oldH;
+        wrap.style.overflow=oldO;
+      }
+    }
+  }
+
+  // Graph export extra right/top margin
+  if(typeof saveGraph==='function' && window.chart){
+    chart.options.layout = chart.options.layout || {};
+    chart.options.layout.padding = {top:35,right:55,left:15,bottom:25};
+    chart.update();
+  }
+
+});
+</script>
+
+
+<script>
+window.addEventListener('load',()=>{
+
+ if(typeof saveGraph==='function'){
+   const oldGraph=saveGraph;
+
+   saveGraph=async function(){
+      if(window.chart){
+         const oldPad=chart.options.layout?.padding;
+         const oldAspect=chart.options.maintainAspectRatio;
+
+         chart.options.maintainAspectRatio=false;
+         chart.options.layout={
+            padding:{
+              top:60,
+              right:90,
+              left:35,
+              bottom:70
+            }
+         };
+
+         if(chart.canvas){
+           chart.canvas.style.width='1200px';
+           chart.canvas.style.height='700px';
+         }
+
+         chart.resize();
+         chart.update();
+
+         await new Promise(r=>setTimeout(r,250));
+         await oldGraph();
+
+         chart.options.layout.padding=oldPad;
+         chart.options.maintainAspectRatio=oldAspect;
+         chart.resize();
+         chart.update();
+      } else {
+         oldGraph();
+      }
+   }
+ }
+
+});
+</script>
+
+
+<script>
+window.addEventListener('load',()=>{
+
+ if(typeof saveGraph==='function'){
+   const oldSaveGraph=saveGraph;
+
+   saveGraph=async function(){
+      if(window.chart){
+        const oldPad = chart.options.layout?.padding || {};
+        const oldCanvasW = chart.canvas?.style.width;
+        const oldCanvasH = chart.canvas?.style.height;
+
+        // iPhone-safe export canvas
+        chart.options.layout = {
+          padding:{
+            top:70,
+            right:140,
+            left:40,
+            bottom:90
+          }
+        };
+
+        if(chart.canvas){
+          chart.canvas.style.width='1600px';
+          chart.canvas.style.height='900px';
+        }
+
+        chart.resize();
+        chart.update();
+
+        await new Promise(r=>setTimeout(r,400));
+        await oldSaveGraph();
+
+        chart.options.layout.padding = oldPad;
+
+        if(chart.canvas){
+          chart.canvas.style.width=oldCanvasW;
+          chart.canvas.style.height=oldCanvasH;
+        }
+
+        chart.resize();
+        chart.update();
+      } else {
+        oldSaveGraph();
+      }
+   }
+ }
+
+});
+</script>
+
+
+<script>
+window.addEventListener('load',()=>{
+
+ if(window.chart){
+    // disable clipping globally
+    if(chart.data?.datasets){
+      chart.data.datasets.forEach(ds=>{
+        ds.clip = false;
+      });
+    }
+ }
+
+ if(typeof saveGraph==='function'){
+   const oldSave=saveGraph;
+
+   saveGraph=async function(){
+
+      if(window.chart){
+         // more brutal export padding
+         chart.options.layout = {
+            padding:{
+              top:80,
+              right:220,
+              left:50,
+              bottom:100
+            }
+         };
+
+         // shift labels away from right edge during export
+         if(chart.options.plugins && chart.options.plugins.datalabels){
+            chart.options.plugins.datalabels = {
+               ...chart.options.plugins.datalabels,
+               clamp:false,
+               clip:false,
+               anchor:'end',
+               align:function(ctx){
+                  const idx=ctx.dataIndex;
+                  const last=ctx.dataset.data.length-1;
+                  return idx===last ? 'left' : 'top';
+               },
+               offset:function(ctx){
+                  const idx=ctx.dataIndex;
+                  const last=ctx.dataset.data.length-1;
+                  return idx===last ? 14 : 6;
+               }
+            };
+         }
+
+         chart.resize();
+         chart.update();
+
+         await new Promise(r=>setTimeout(r,500));
+      }
+
+      await oldSave();
+
+      if(window.chart){
+         chart.update();
+      }
+   }
+ }
+
+});
+</script>
+
+
+<script>
+window.addEventListener('load',()=>{
+
+ if(window.chart){
+    // live graph breathing room
+    chart.options.layout = {
+      padding:{
+        top:35,
+        right:90,
+        left:25,
+        bottom:45
+      }
+    };
+
+    if(chart.options.plugins && chart.options.plugins.datalabels){
+      chart.options.plugins.datalabels = {
+        ...chart.options.plugins.datalabels,
+        clip:false,
+        clamp:false,
+        align:function(ctx){
+          const idx=ctx.dataIndex;
+          const last=ctx.dataset.data.length-1;
+          return idx===last ? 'left' : 'top';
+        },
+        offset:function(ctx){
+          const idx=ctx.dataIndex;
+          const last=ctx.dataset.data.length-1;
+          return idx===last ? 14 : 6;
+        }
+      };
+    }
+
+    chart.resize();
+    chart.update();
+ }
+
+});
+</script>
+
+
+<script>
+window.addEventListener('load',()=>{
+
+ if(window.chart){
+
+   // chart only, no global canvas forcing
+   chart.options.responsive = true;
+   chart.options.maintainAspectRatio = true;
+
+   chart.options.layout = {
+      padding:{
+         top:35,
+         right:120,
+         left:25,
+         bottom:55
+      }
+   };
+
+   if(chart.options.plugins && chart.options.plugins.datalabels){
+      chart.options.plugins.datalabels = {
+        ...chart.options.plugins.datalabels,
+        clip:false,
+        clamp:false,
+        anchor:'end',
+        align:(ctx)=>{
+          const last=ctx.dataset.data.length-1;
+          return ctx.dataIndex===last ? 'left' : 'top';
+        },
+        offset:(ctx)=>{
+          const last=ctx.dataset.data.length-1;
+          return ctx.dataIndex===last ? 16 : 6;
+        }
+      };
+   }
+
+   chart.resize();
+   chart.update();
+ }
+
+});
+</script>
+
 </body>
 </html>
