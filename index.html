@@ -38,6 +38,37 @@ th,td{padding:10px;border-bottom:1px solid #eee;text-align:left;font-size:.9rem}
 }
 </style>
 
+
+<style>
+/* v1.3 layout expansion */
+@media (min-width: 900px){
+  .main-grid, .top-grid, .dashboard-grid{
+    display:grid !important;
+    grid-template-columns:35% 65% !important;
+    gap:18px !important;
+    align-items:start;
+  }
+
+  .monitoring-dashboard,
+  .dashboard-card{
+    width:100% !important;
+    max-width:none !important;
+  }
+}
+
+/* graph fill width */
+.chart-container,
+#chartWrap,
+canvas{
+  width:100% !important;
+}
+
+#bpChart{
+  width:100% !important;
+  max-width:none !important;
+}
+</style>
+
 </head>
 <body>
 <header>
@@ -821,6 +852,46 @@ window.addEventListener('load',()=>{
          chart.update();
       }
    }
+ }
+
+});
+</script>
+
+
+<script>
+window.addEventListener('load',()=>{
+
+ if(window.chart){
+    // live graph breathing room
+    chart.options.layout = {
+      padding:{
+        top:35,
+        right:90,
+        left:25,
+        bottom:45
+      }
+    };
+
+    if(chart.options.plugins && chart.options.plugins.datalabels){
+      chart.options.plugins.datalabels = {
+        ...chart.options.plugins.datalabels,
+        clip:false,
+        clamp:false,
+        align:function(ctx){
+          const idx=ctx.dataIndex;
+          const last=ctx.dataset.data.length-1;
+          return idx===last ? 'left' : 'top';
+        },
+        offset:function(ctx){
+          const idx=ctx.dataIndex;
+          const last=ctx.dataset.data.length-1;
+          return idx===last ? 14 : 6;
+        }
+      };
+    }
+
+    chart.resize();
+    chart.update();
  }
 
 });
