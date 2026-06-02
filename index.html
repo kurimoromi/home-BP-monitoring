@@ -4,159 +4,287 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>BP Monitor Phase 3</title>
+<title>BP Monitor Phase 2</title>
 <style>
 body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;background:#f5f6f8;margin:0;color:#222}
 header{background:#fff;padding:18px;border-bottom:1px solid #ddd;position:sticky;top:0}
 .container{max-width:1200px;margin:auto;padding:16px}
 .card{background:#fff;border:1px solid #ddd;border-radius:16px;padding:16px;margin-bottom:16px}
-.controls{display:flex;gap:10px;flex-wrap:wrap}
-input,select,button{
-padding:12px;border-radius:10px;border:1px solid #ccc;font:inherit}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+label{display:block;margin:10px 0 5px}
+input,select,textarea,button{width:100%;padding:12px;border-radius:10px;border:1px solid #ccc;font:inherit;box-sizing:border-box}
+textarea{min-height:60px}
 button{background:#2563eb;color:#fff;border:none;font-weight:600}
-.secondary{background:#64748b}
-.tablewrap{overflow:auto;max-height:420px}
+.tablewrap{overflow:auto;max-height:520px}
 table{width:100%;border-collapse:collapse}
-th{position:sticky;top:0;background:#fff}
 th,td{padding:10px;border-bottom:1px solid #eee;text-align:left;font-size:.9rem}
-#reportView{background:#fff;border:1px solid #ddd;border-radius:16px;padding:16px}
+.session{border-left:4px solid #2563eb;padding-left:10px;margin-bottom:12px}
 </style>
-</head>
+<script src="https://cdn.jsdelivr.net/npm/html2canvas"></script></head>
 <body>
-
 <header>
-<b>BP Monitor – Phase 3</b><br>
-<small>Physician Communication Layer</small>
+<b>BP Monitor – Phase 2</b><br>
+<small>Monitoring Workspace</small>
 </header>
 
 <div class="container">
 
+<div class="grid">
+
 <div class="card">
-<div class="controls">
-<select id="sourceFilter">
-<option value="Home">Home only</option>
+<h3>Add Reading</h3>
+
+<label>Date</label>
+<input type="date" id="date">
+
+<label>Time</label>
+<input type="time" id="time" onchange="autoSession()">
+
+<label>Session</label>
+<select id="session">
+<option>เช้า</option>
+
+<option>กลางคืน</option>
+<option>อื่น ๆ</option>
+</select>
+
+<label>Round</label>
+<select id="round">
+<option>1</option>
+<option>2</option>
+<option>3</option>
+<option>More</option>
+</select>
+
+<label>SYS (เลขบน)</label>
+<input type="number" id="sys">
+
+<label>DIA (เลขล่าง)</label>
+<input type="number" id="dia">
+
+<label>PULSE (ชีพจร)</label>
+<input type="number" id="pulse">
+
+<label>Location</label>
+<select id="location">
+<option>Home</option>
+<option>อื่น ๆ</option>
+<option>Hospital</option>
+</select>
+
+<label>Rest</label>
+<select id="rest">
+<option>พัก 5 นาทีขึ้นไป</option>
+<option>พักไม่ถึง 5 นาที</option>
+<option>ไม่ได้พักก่อนวัด</option>
+</select>
+
+<label>Context</label>
+<select id="context">
+<option>ปกติ</option>
+<option>เดิน / รีบ</option>
+<option>หลังอาหาร</option>
+<option>ดื่มชา / กาแฟ</option>
+<option>เครียด / กังวล</option>
+<option>อื่น ๆ</option>
+</select>
+
+<label>Note</label>
+<textarea id="note"></textarea>
+
+<button onclick="saveReading()">Save Reading</button>
+</div>
+
+<div class="card">
+<h3>Monitoring Dashboard</h3>
+
+<label>Source Filter</label>
+<select id="filter" onchange="renderAll()">
+<option value="Home" selected>Home only</option>
 <option value="Clinic">Clinic only</option>
 <option value="Hospital">Hospital only</option>
 <option value="all">All sources</option>
 </select>
 
-<input type="date" id="fromDate">
-<input type="date" id="toDate">
-
-<button onclick="renderReport()">Generate Report</button>
-<button onclick="saveReportImage()">Save Report Image</button>
-<button class="secondary" onclick="saveGraphImage()">Save Graph</button>
-</div>
-</div>
-
-<div id="reportView">
-
-<div class="card">
-<h3>Monitoring Dashboard</h3>
 <div id="dashboard"></div>
-</div>
-
-<div class="card">
-<h3>Blood Pressure Trend</h3>
 <canvas id="chart" height="220"></canvas>
+
+<div style="margin-top:10px;padding:10px;border:1px solid #ddd;border-radius:10px;background:#fafafa;font-size:.9rem">
+<b>Flag Reference</b><br>
+🔵 Low-range reading = ตัวเลขอยู่ในช่วงความดันต่ำ<br>
+🟢 Normal-range = ตัวเลขอยู่ในช่วงปกติ<br>
+🟡 Elevated-range reading = ตัวเลขสูงกว่าปกติ<br>
+🟠 Hypertension-range reading = ตัวเลขอยู่ในช่วงค่าความดันสูง<br><br>
+<small>Flag ใช้ช่วยอ่านและจัดกลุ่มค่าความดัน ไม่ใช่การวินิจฉัยโรค</small>
 </div>
 
-<div class="card">
+<div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:12px">
+<button onclick="saveReportImage()">Save Report Image</button>
+<button onclick="saveGraphImage()">Save Graph</button>
+</div><div id="chartStatus" style="margin-top:8px;font-size:.85rem;color:#666"></div>
+
+</div>
+</div>
+
+<div style="display:grid;grid-template-columns:2fr 1fr;gap:16px"><div class="card">
 <h3>Evidence Table</h3>
-
-<input type="text" id="searchBox" placeholder="Search..." oninput="renderReport()">
-
 <div class="tablewrap">
 <table>
 <thead>
 <tr>
-<th>ID</th>
-<th>Date</th>
-<th>Time</th>
-<th>BP</th>
-<th>Flag</th>
-<th>Location</th>
-<th>Session</th>
+<th>ID</th><th>Date/Time</th><th>Session</th><th>BP</th><th>Flag</th><th>Location</th>
 </tr>
 </thead>
 <tbody id="tbody"></tbody>
 </table>
 </div>
-
 </div>
 
+<div class="card">
+<h3>Session Timeline</h3>
+<div id="timeline"></div>
+</div>
 </div>
 
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/html2canvas"></script>
-
 <script>
 function gid(x){return document.getElementById(x)}
-let chartObj=null;
+
+function createID(){ return 'BP-'+Date.now(); }
 
 function numericFlag(sys,dia){
- if(sys<100||dia<60) return {label:'Low',color:'#dbeafe'};
- if(sys>=140||dia>=90) return {label:'Hypertension',color:'#fed7aa'};
- if(sys>=120||dia>=80) return {label:'Elevated',color:'#fef3c7'};
+ if(sys<100 || dia<60) return {label:'Low',color:'#dbeafe'};
+ if(sys>=140 || dia>=90) return {label:'Hypertension-range',color:'#fed7aa'};
+ if(sys>=120 || dia>=80) return {label:'Elevated',color:'#fef3c7'};
  return {label:'Normal',color:'#dcfce7'};
+}
+
+
+function autoSession(){
+ let t=gid('time').value;
+ if(!t) return;
+ let h=parseInt(t.split(':')[0]);
+ if(h<12){gid('session').value='เช้า';}
+ else{gid('session').value='กลางคืน';}
+}
+
+function saveReading(){
+ let data=JSON.parse(localStorage.getItem('bpData')||'[]');
+
+ let r={
+  id:createID(),
+  date:gid('date').value,
+  time:gid('time').value,
+  session:gid('session').value,
+  round:gid('round').value,
+  sys:+gid('sys').value,
+  dia:+gid('dia').value,
+  pulse:gid('pulse').value,
+  location:gid('location').value,
+  rest:gid('rest').value,
+  context:gid('context').value,
+  note:gid('note').value
+ };
+
+ if(!r.date||!r.sys||!r.dia){
+  alert('กรอก Date/SYS/DIA');
+  return;
+ }
+
+ data.unshift(r);
+ localStorage.setItem('bpData',JSON.stringify(data));
+
+ gid('sys').value='';
+ gid('dia').value='';
+ gid('pulse').value='';
+ gid('note').value='';
+ gid('context').selectedIndex=0;
+ gid('rest').selectedIndex=0;
+
+ renderAll();
 }
 
 function filteredData(){
  let data=JSON.parse(localStorage.getItem('bpData')||'[]');
-
- let source=gid('sourceFilter').value;
- if(source!=='all'){
-   data=data.filter(x=>x.location===source);
- }
-
- let from=gid('fromDate').value;
- let to=gid('toDate').value;
-
- if(from){
-   data=data.filter(x=>x.date>=from);
- }
- if(to){
-   data=data.filter(x=>x.date<=to);
- }
-
- let q=gid('searchBox') ? gid('searchBox').value.toLowerCase() : '';
- if(q){
-  data=data.filter(x=>JSON.stringify(x).toLowerCase().includes(q));
- }
-
+ let f=gid('filter').value;
+ if(f!=='all') data=data.filter(x=>x.location===f);
  return data;
 }
 
-function renderReport(){
+let chartObj=null;
+
+function renderAll(){
  let data=filteredData();
 
  renderDashboard(data);
+ renderTimeline(data);
  renderTable(data);
  renderChart(data);
 }
 
 function renderDashboard(data){
  if(!data.length){
-   gid('dashboard').innerHTML='ยังไม่มีข้อมูล';
-   return;
+  gid('dashboard').innerHTML='ยังไม่มีข้อมูล';
+  return;
  }
 
  let latest=data[0];
-
  gid('dashboard').innerHTML=`
+ <div class="session">
  <b>Monitoring Period</b><br>
  ${data[data.length-1].date} → ${latest.date}<br><br>
 
- <b>Total readings</b><br>
- ${data.length}<br><br>
-
- <b>Latest</b><br>
+ <b>Latest Reading</b><br>
  ${latest.sys}/${latest.dia}<br>
+ ${latest.time}<br>
  ${latest.location}<br>
- ${latest.time}
- `;
+ ${latest.rest}
+ </div>`;
+}
+
+function renderTimeline(data){
+ let groups={};
+
+ data.forEach(r=>{
+  let key=r.date+'-'+r.session;
+  if(!groups[key]) groups[key]=[];
+  groups[key].push(r);
+ });
+
+ let html='';
+
+ Object.keys(groups).forEach(k=>{
+  let arr=groups[k];
+  html+=`<div class="session">
+  <b>${k}</b><br>`;
+
+  if(arr.length>=2){
+    let sorted=arr.slice().sort((a,b)=>a.time.localeCompare(b.time));
+    let closeFound=false;
+    for(let i=0;i<sorted.length-1;i++){
+      let a=sorted[i], b=sorted[i+1];
+      let close=Math.abs(a.sys-b.sys)<=5 && Math.abs(a.dia-b.dia)<=5;
+      if(close){
+        closeFound=true;
+        html+=`✓ 2 readings close together (${a.round} ↔ ${b.round})<br>`;
+        break;
+      }
+    }
+    if(!closeFound){
+      html+=`No close pair yet<br>`;
+    }
+  }
+
+  arr.forEach(r=>{
+    html+=`${r.time} • ${r.sys}/${r.dia}<br>`;
+  });
+
+  html+='</div>';
+ });
+
+ gid('timeline').innerHTML=html || 'ยังไม่มี session';
 }
 
 function renderTable(data){
@@ -169,50 +297,66 @@ function renderTable(data){
   tbody.innerHTML+=`
   <tr style="background:${nf.color}">
   <td>${r.id}</td>
-  <td>${r.date}</td>
-  <td>${r.time}</td>
+  <td>${r.date}<br>${r.time}</td>
+  <td>${r.session} / ${r.round}</td>
   <td>${r.sys}/${r.dia}</td>
   <td>${nf.label}</td>
   <td>${r.location}</td>
-  <td>${r.session||'-'}</td>
   </tr>`;
  });
 }
 
+
 function renderChart(data){
  let ctx=gid('chart');
+ let status=gid('chartStatus');
+
  if(chartObj) chartObj.destroy();
 
- chartObj=new Chart(ctx,{
- type:'line',
- data:{
-  labels:data.map(x=>x.date+' '+x.time).reverse(),
-  datasets:[
-   {label:'SYS',data:data.map(x=>x.sys).reverse()},
-   {label:'DIA',data:data.map(x=>x.dia).reverse()}
-  ]
+ try{
+  chartObj=new Chart(ctx,{options:{scales:{y:{min:40,max:200}}}},
+   type:'line',
+   data:{
+    labels:data.map(x=>x.date+' '+x.time).reverse(),
+    datasets:[
+      {label:'SYS',data:data.map(x=>x.sys).reverse()},
+      {label:'DIA',data:data.map(x=>x.dia).reverse()}
+    ]
+   }
+  });
+  status.innerHTML='Graph loaded';
+ }catch(e){
+  status.innerHTML='Graph unavailable';
+  console.error(e);
  }
- });
 }
 
 function saveReportImage(){
- html2canvas(gid('reportView')).then(canvas=>{
-   let a=document.createElement('a');
-   a.download='BP_Report.png';
-   a.href=canvas.toDataURL();
-   a.click();
+ html2canvas(document.body,{backgroundColor:'#ffffff'}).then(canvas=>{
+  let a=document.createElement('a');
+  a.download='BP_Report.png';
+  a.href=canvas.toDataURL('image/png');
+  a.click();
  });
 }
 
 function saveGraphImage(){
+ let c=document.getElementById('chart');
+ let bg=document.createElement('canvas');
+ bg.width=c.width;
+ bg.height=c.height;
+ let ctx=bg.getContext('2d');
+ ctx.fillStyle='#ffffff';
+ ctx.fillRect(0,0,bg.width,bg.height);
+ ctx.drawImage(c,0,0);
  let a=document.createElement('a');
  a.download='BP_Graph.png';
- a.href=gid('chart').toDataURL();
+ a.href=bg.toDataURL('image/png');
  a.click();
 }
 
-renderReport();
+gid('date').valueAsDate=new Date();
+renderAll();
 </script>
-
 </body>
 </html>
