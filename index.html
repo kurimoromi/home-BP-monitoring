@@ -4,30 +4,27 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>BP Monitor Phase 1</title>
+<title>BP Monitor Phase 2</title>
 <style>
 body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;background:#f5f6f8;margin:0;color:#222}
 header{background:#fff;padding:18px;border-bottom:1px solid #ddd;position:sticky;top:0}
-.container{max-width:1100px;margin:auto;padding:16px}
+.container{max-width:1200px;margin:auto;padding:16px}
 .card{background:#fff;border:1px solid #ddd;border-radius:16px;padding:16px;margin-bottom:16px}
 .grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
 label{display:block;margin:10px 0 5px}
-input,select,textarea,button{
-width:100%;padding:12px;border-radius:10px;border:1px solid #ccc;font:inherit;box-sizing:border-box}
+input,select,textarea,button{width:100%;padding:12px;border-radius:10px;border:1px solid #ccc;font:inherit;box-sizing:border-box}
 textarea{min-height:60px}
 button{background:#2563eb;color:#fff;border:none;font-weight:600}
-.danger{background:#dc2626}
+.tablewrap{overflow:auto;max-height:520px}
 table{width:100%;border-collapse:collapse}
-th,td{padding:10px;border-bottom:1px solid #eee;text-align:left;font-size:.92rem}
-.tablewrap{overflow:auto;max-height:500px}
-small{color:#666}
-.notice{background:#eef4ff;padding:10px;border-radius:10px;font-size:.9rem}
+th,td{padding:10px;border-bottom:1px solid #eee;text-align:left;font-size:.9rem}
+.session{border-left:4px solid #2563eb;padding-left:10px;margin-bottom:12px}
 </style>
 </head>
 <body>
 <header>
-<b>BP Monitor – Phase 1</b><br>
-<small>Monitoring Foundation</small>
+<b>BP Monitor – Phase 2</b><br>
+<small>Monitoring Workspace</small>
 </header>
 
 <div class="container">
@@ -43,26 +40,30 @@ small{color:#666}
 <label>Time</label>
 <input type="time" id="time">
 
-<div class="notice">
-ก่อนวัดให้นั่งนิ่ง 3–5 นาที • ถ้าวัดหลายครั้งให้บันทึกแยกแต่ละค่า
-</div>
+<label>Session</label>
+<select id="session">
+<option>Morning</option>
+<option>Afternoon</option>
+<option>Evening</option>
+<option>Clinic</option>
+</select>
 
 <label>Round</label>
 <select id="round">
-<option>ครั้งที่ 1</option>
-<option>ครั้งที่ 2</option>
-<option>ครั้งที่ 3</option>
-<option>เพิ่มเติม</option>
+<option>1</option>
+<option>2</option>
+<option>3</option>
+<option>More</option>
 </select>
 
 <label>SYS (เลขบน)</label>
-<input type="number" inputmode="numeric" id="sys">
+<input type="number" id="sys">
 
 <label>DIA (เลขล่าง)</label>
-<input type="number" inputmode="numeric" id="dia">
+<input type="number" id="dia">
 
 <label>PULSE (ชีพจร)</label>
-<input type="number" inputmode="numeric" id="pulse">
+<input type="number" id="pulse">
 
 <label>Location</label>
 <select id="location">
@@ -71,22 +72,14 @@ small{color:#666}
 <option>Hospital</option>
 </select>
 
-<label>พักก่อนวัด</label>
+<label>Rest</label>
 <select id="rest">
 <option>พัก 5 นาทีขึ้นไป</option>
 <option>พักไม่ถึง 5 นาที</option>
 <option>ไม่ได้พักก่อนวัด</option>
 </select>
 
-<label>ท่าทาง</label>
-<select id="posture">
-<option>นั่ง</option>
-<option>ยืน</option>
-<option>นอน</option>
-<option>อื่น ๆ</option>
-</select>
-
-<label>บริบท</label>
+<label>Context</label>
 <select id="context">
 <option>ปกติ</option>
 <option>เดิน / รีบ</option>
@@ -100,18 +93,28 @@ small{color:#666}
 <textarea id="note"></textarea>
 
 <button onclick="saveReading()">Save Reading</button>
-
 </div>
 
 <div class="card">
-<h3>Monitoring Notes</h3>
-<div id="monitorInfo">
-ยังไม่มีข้อมูล
+<h3>Monitoring Dashboard</h3>
+
+<label>Source Filter</label>
+<select id="filter" onchange="renderAll()">
+<option value="Home">Home only</option>
+<option value="Clinic">Clinic only</option>
+<option value="Hospital">Hospital only</option>
+<option value="all">All sources</option>
+</select>
+
+<div id="dashboard"></div>
+<canvas id="chart" height="220"></canvas>
+
+</div>
 </div>
 
-<button class="danger" style="margin-top:12px" onclick="resetAll()">Reset All</button>
-</div>
-
+<div class="card">
+<h3>Session Timeline</h3>
+<div id="timeline"></div>
 </div>
 
 <div class="card">
@@ -120,13 +123,7 @@ small{color:#666}
 <table>
 <thead>
 <tr>
-<th>ID</th>
-<th>Date/Time</th>
-<th>BP</th>
-<th>Flag</th>
-<th>Context</th>
-<th>Note</th>
-<th>Delete</th>
+<th>ID</th><th>Date/Time</th><th>Session</th><th>BP</th><th>Flag</th><th>Location</th>
 </tr>
 </thead>
 <tbody id="tbody"></tbody>
@@ -136,39 +133,17 @@ small{color:#666}
 
 </div>
 
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
-const tbody=document.getElementById('tbody');
-const monitorInfo=document.getElementById('monitorInfo');
-let undoCache=null;
+function gid(x){return document.getElementById(x)}
 
-function gid(id){
- return document.getElementById(id);
-}
-
-function createID(){
- return 'BP-'+Date.now();
-}
+function createID(){ return 'BP-'+Date.now(); }
 
 function numericFlag(sys,dia){
- if(sys<100 || dia<60){
-   return {label:'Low-range reading',color:'#dbeafe'};
- }
- if(sys>=140 || dia>=90){
-   return {label:'Hypertension-range reading',color:'#fed7aa'};
- }
- if(sys>=120 || dia>=80){
-   return {label:'Elevated-range reading',color:'#fef3c7'};
- }
- return {label:'Normal-range',color:'#dcfce7'};
-}
-
-function contextFlags(r){
- let f=[];
- if(r.rest==='พักไม่ถึง 5 นาที') f.push('Rest <5 min');
- if(r.rest==='ไม่ได้พักก่อนวัด') f.push('No pre-rest');
- if(r.location!=='Home') f.push(r.location);
- if(r.context!=='ปกติ') f.push(r.context);
- return f;
+ if(sys<100 || dia<60) return {label:'Low',color:'#dbeafe'};
+ if(sys>=140 || dia>=90) return {label:'Hypertension-range',color:'#fed7aa'};
+ if(sys>=120 || dia>=80) return {label:'Elevated',color:'#fef3c7'};
+ return {label:'Normal',color:'#dcfce7'};
 }
 
 function saveReading(){
@@ -178,103 +153,137 @@ function saveReading(){
   id:createID(),
   date:gid('date').value,
   time:gid('time').value,
+  session:gid('session').value,
   round:gid('round').value,
   sys:+gid('sys').value,
   dia:+gid('dia').value,
   pulse:gid('pulse').value,
   location:gid('location').value,
   rest:gid('rest').value,
-  posture:gid('posture').value,
   context:gid('context').value,
   note:gid('note').value
  };
 
  if(!r.date||!r.sys||!r.dia){
-   alert('กรอก Date / SYS / DIA');
-   return;
+  alert('กรอก Date/SYS/DIA');
+  return;
  }
 
  data.unshift(r);
  localStorage.setItem('bpData',JSON.stringify(data));
- render();
+ renderAll();
 }
 
-function deleteRow(id){
+function filteredData(){
  let data=JSON.parse(localStorage.getItem('bpData')||'[]');
- let deleted=data.find(x=>x.id===id);
- if(confirm('ลบรายการนี้หรือไม่?')){
-   undoCache=deleted;
-   data=data.filter(x=>x.id!==id);
-   localStorage.setItem('bpData',JSON.stringify(data));
-   render();
-   showUndo();
- }
+ let f=gid('filter').value;
+ if(f!=='all') data=data.filter(x=>x.location===f);
+ return data;
 }
 
-function showUndo(){
- monitorInfo.innerHTML += `
- <div style="margin-top:12px">
- <button onclick="undoDelete()">Undo Delete</button>
+let chartObj=null;
+
+function renderAll(){
+ let data=filteredData();
+
+ renderDashboard(data);
+ renderTimeline(data);
+ renderTable(data);
+ renderChart(data);
+}
+
+function renderDashboard(data){
+ if(!data.length){
+  gid('dashboard').innerHTML='ยังไม่มีข้อมูล';
+  return;
+ }
+
+ let latest=data[0];
+ gid('dashboard').innerHTML=`
+ <div class="session">
+ <b>Monitoring Period</b><br>
+ ${data[data.length-1].date} → ${latest.date}<br><br>
+
+ <b>Latest Reading</b><br>
+ ${latest.sys}/${latest.dia}<br>
+ ${latest.time}<br>
+ ${latest.location}<br>
+ ${latest.rest}
  </div>`;
 }
 
-function undoDelete(){
- if(!undoCache) return;
- let data=JSON.parse(localStorage.getItem('bpData')||'[]');
- data.unshift(undoCache);
- localStorage.setItem('bpData',JSON.stringify(data));
- undoCache=null;
- render();
+function renderTimeline(data){
+ let groups={};
+
+ data.forEach(r=>{
+  let key=r.date+'-'+r.session;
+  if(!groups[key]) groups[key]=[];
+  groups[key].push(r);
+ });
+
+ let html='';
+
+ Object.keys(groups).forEach(k=>{
+  let arr=groups[k];
+  html+=`<div class="session">
+  <b>${k}</b><br>`;
+
+  if(arr.length>=2){
+    let a=arr[0], b=arr[1];
+    let close=Math.abs(a.sys-b.sys)<=5 && Math.abs(a.dia-b.dia)<=5;
+    if(close){
+      html+=`✓ 2 readings close together<br>`;
+    }
+  }
+
+  arr.forEach(r=>{
+    html+=`${r.time} • ${r.sys}/${r.dia}<br>`;
+  });
+
+  html+='</div>';
+ });
+
+ gid('timeline').innerHTML=html || 'ยังไม่มี session';
 }
 
-function render(){
- let data=JSON.parse(localStorage.getItem('bpData')||'[]');
+function renderTable(data){
+ let tbody=gid('tbody');
  tbody.innerHTML='';
 
  data.forEach(r=>{
-   let nf=numericFlag(r.sys,r.dia);
-   let cf=contextFlags(r).join(' • ');
+  let nf=numericFlag(r.sys,r.dia);
 
-   let prev=data.find(x=>x.date===r.date && x.time<r.time);
-   let auto='';
-   if(prev){
-      let t1=new Date('1970-01-01T'+prev.time);
-      let t2=new Date('1970-01-01T'+r.time);
-      let diff=(t2-t1)/60000;
-      auto=`Prev interval ${Math.round(diff)} min`;
-   }
-
-   tbody.innerHTML += `
-   <tr style="background:${nf.color}">
-   <td>${r.id}</td>
-   <td>${r.date}<br>${r.time||''}</td>
-   <td>${r.sys}/${r.dia}<br><small>${r.pulse||''}</small></td>
-   <td>${nf.label}<br><small>${cf}</small></td>
-   <td>${r.location}<br><small>${r.rest}</small></td>
-   <td>${r.note||'-'}<br><small>${auto}</small></td>
-   <td><button class="danger" onclick="deleteRow('${r.id}')">ลบ</button></td>
-   </tr>`;
+  tbody.innerHTML+=`
+  <tr style="background:${nf.color}">
+  <td>${r.id}</td>
+  <td>${r.date}<br>${r.time}</td>
+  <td>${r.session} / ${r.round}</td>
+  <td>${r.sys}/${r.dia}</td>
+  <td>${nf.label}</td>
+  <td>${r.location}</td>
+  </tr>`;
  });
-
- if(data.length){
-   monitorInfo.innerHTML=`
-   <b>Total readings:</b> ${data.length}<br>
-   <b>Latest:</b> ${data[0].sys}/${data[0].dia}<br>
-   <small>Phase 1 = monitoring foundation</small>`;
- }else{
-   monitorInfo.innerHTML='ยังไม่มีข้อมูล';
- }
 }
 
-function resetAll(){
- if(confirm('ลบข้อมูลทั้งหมดหรือไม่?')){
-   localStorage.removeItem('bpData');
-   render();
- }
+function renderChart(data){
+ let ctx=gid('chart');
+
+ if(chartObj) chartObj.destroy();
+
+ chartObj=new Chart(ctx,{
+  type:'line',
+  data:{
+   labels:data.map(x=>x.date+' '+x.time).reverse(),
+   datasets:[
+    {label:'SYS',data:data.map(x=>x.sys).reverse()},
+    {label:'DIA',data:data.map(x=>x.dia).reverse()}
+   ]
+  }
+ });
 }
 
 gid('date').valueAsDate=new Date();
-render();
+renderAll();
 </script>
 </body>
 </html>
