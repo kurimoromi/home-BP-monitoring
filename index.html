@@ -20,7 +20,7 @@ table{width:100%;border-collapse:collapse}
 th,td{padding:10px;border-bottom:1px solid #eee;text-align:left;font-size:.9rem}
 .session{border-left:4px solid #2563eb;padding-left:10px;margin-bottom:12px}
 </style>
-</head>
+<script src="https://cdn.jsdelivr.net/npm/html2canvas"></script></head>
 <body>
 <header>
 <b>BP Monitor – Phase 2</b><br>
@@ -38,14 +38,14 @@ th,td{padding:10px;border-bottom:1px solid #eee;text-align:left;font-size:.9rem}
 <input type="date" id="date">
 
 <label>Time</label>
-<input type="time" id="time">
+<input type="time" id="time" onchange="autoSession()">
 
 <label>Session</label>
 <select id="session">
-<option>Morning</option>
-<option>Afternoon</option>
-<option>Evening</option>
-<option>Clinic</option>
+<option>เช้า</option>
+
+<option>กลางคืน</option>
+<option>อื่น ๆ</option>
 </select>
 
 <label>Round</label>
@@ -68,7 +68,7 @@ th,td{padding:10px;border-bottom:1px solid #eee;text-align:left;font-size:.9rem}
 <label>Location</label>
 <select id="location">
 <option>Home</option>
-<option>Clinic</option>
+<option>อื่น ๆ</option>
 <option>Hospital</option>
 </select>
 
@@ -107,17 +107,19 @@ th,td{padding:10px;border-bottom:1px solid #eee;text-align:left;font-size:.9rem}
 </select>
 
 <div id="dashboard"></div>
-<canvas id="chart" height="220"></canvas><div id="chartStatus" style="margin-top:8px;font-size:.85rem;color:#666"></div>
+<canvas id="chart" height="220"></canvas>
+
+
+
+<div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:12px">
+<button onclick="saveReportImage()">Save Report Image</button>
+<button onclick="saveGraphImage()">Save Graph</button>
+</div><div id="chartStatus" style="margin-top:8px;font-size:.85rem;color:#666"></div>
 
 </div>
 </div>
 
-<div class="card">
-<h3>Session Timeline</h3>
-<div id="timeline"></div>
-</div>
-
-<div class="card">
+<div style="display:grid;grid-template-columns:2fr 1fr;gap:16px"><div class="card">
 <h3>Evidence Table</h3>
 <div class="tablewrap">
 <table>
@@ -128,6 +130,11 @@ th,td{padding:10px;border-bottom:1px solid #eee;text-align:left;font-size:.9rem}
 </thead>
 <tbody id="tbody"></tbody>
 </table>
+</div></div>
+
+<div class="card">
+<h3>Session Timeline</h3>
+<div id="timeline"></div>
 </div>
 </div>
 
@@ -146,8 +153,19 @@ function numericFlag(sys,dia){
  return {label:'Normal',color:'#dcfce7'};
 }
 
+
+function autoSession(){
+ let t=gid('time').value;
+ if(!t) return;
+ let h=parseInt(t.split(':')[0]);
+ if(h<12){gid('session').value='เช้า';}
+ else{gid('session').value='กลางคืน';}
+}
+
 function saveReading(){
  let data=JSON.parse(localStorage.getItem('bpData')||'[]');
+
+ autoSession();
 
  let r={
   id:createID(),
@@ -171,6 +189,14 @@ function saveReading(){
 
  data.unshift(r);
  localStorage.setItem('bpData',JSON.stringify(data));
+
+ gid('sys').value='';
+ gid('dia').value='';
+ gid('pulse').value='';
+ gid('note').value='';
+ gid('context').selectedIndex=0;
+ gid('rest').selectedIndex=0;
+
  renderAll();
 }
 
@@ -260,16 +286,15 @@ function renderTable(data){
  tbody.innerHTML='';
 
  data.forEach(r=>{
-  let nf=numericFlag(r.sys,r.dia);
 
   tbody.innerHTML+=`
-  <tr style="background:${nf.color}">
-  <td>${r.id}</td>
+  <tr>
   <td>${r.date}<br>${r.time}</td>
-  <td>${r.session} #${r.round}</td>
   <td>${r.sys}/${r.dia}</td>
-  <td>${nf.label}</td>
+  <td>${r.pulse||''}</td>
   <td>${r.location}</td>
+  <td>${r.session} #${r.round}</td>
+  <td>${r.note||''}</td>
   </tr>`;
  });
 }
@@ -277,29 +302,53 @@ function renderTable(data){
 
 function renderChart(data){
  let ctx=gid('chart');
- let status=gid('chartStatus');
 
  if(chartObj) chartObj.destroy();
 
- try{
-  chartObj=new Chart(ctx,{
-   type:'line',
-   data:{
-    labels:data.map(x=>x.date+' '+x.time).reverse(),
-    datasets:[
-      {label:'SYS',data:data.map(x=>x.sys).reverse()},
-      {label:'DIA',data:data.map(x=>x.dia).reverse()}
-    ]
+ chartObj=new Chart(ctx,{
+  type:'line',
+  options:{
+   scales:{
+    y:{min:40,max:200}
    }
-  });
-  status.innerHTML='Graph loaded';
- }catch(e){
-  status.innerHTML='Graph unavailable';
-  console.error(e);
- }
+  },
+  data:{
+   labels:data.map(x=>x.date+' '+x.time).reverse(),
+   datasets:[
+    {label:'SYS',data:data.map(x=>x.sys).reverse()},
+    {label:'DIA',data:data.map(x=>x.dia).reverse()}
+   ]
+  }
+ });
 }
+
+function saveReportImage(){
+ html2canvas(document.body,{backgroundColor:'#ffffff'}).then(canvas=>{
+  let a=document.createElement('a');
+  a.download='BP_Report.png';
+  a.href=canvas.toDataURL('image/png');
+  a.click();
+ });
+}
+
+function saveGraphImage(){
+ let c=document.getElementById('chart');
+ let bg=document.createElement('canvas');
+ bg.width=c.width;
+ bg.height=c.height;
+ let ctx=bg.getContext('2d');
+ ctx.fillStyle='#ffffff';
+ ctx.fillRect(0,0,bg.width,bg.height);
+ ctx.drawImage(c,0,0);
+ let a=document.createElement('a');
+ a.download='BP_Graph.png';
+ a.href=bg.toDataURL('image/png');
+ a.click();
+}
+
 gid('date').valueAsDate=new Date();
 renderAll();
 </script>
+
 </body>
 </html>
