@@ -662,5 +662,51 @@ window.addEventListener('load',()=>{
 });
 </script>
 
+
+<script>
+window.addEventListener('load',()=>{
+
+ if(typeof saveGraph==='function'){
+   const oldGraph=saveGraph;
+
+   saveGraph=async function(){
+      if(window.chart){
+         const oldPad=chart.options.layout?.padding;
+         const oldAspect=chart.options.maintainAspectRatio;
+
+         chart.options.maintainAspectRatio=false;
+         chart.options.layout={
+            padding:{
+              top:60,
+              right:90,
+              left:35,
+              bottom:70
+            }
+         };
+
+         if(chart.canvas){
+           chart.canvas.style.width='1200px';
+           chart.canvas.style.height='700px';
+         }
+
+         chart.resize();
+         chart.update();
+
+         await new Promise(r=>setTimeout(r,250));
+         await oldGraph();
+
+         chart.options.layout.padding=oldPad;
+         chart.options.maintainAspectRatio=oldAspect;
+         chart.resize();
+         chart.update();
+      } else {
+         oldGraph();
+      }
+   }
+ }
+
+});
+</script>
+
 </body>
 </html>
