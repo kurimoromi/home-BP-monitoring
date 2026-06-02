@@ -109,14 +109,7 @@ th,td{padding:10px;border-bottom:1px solid #eee;text-align:left;font-size:.9rem}
 <div id="dashboard"></div>
 <canvas id="chart" height="220"></canvas>
 
-<div style="margin-top:10px;padding:10px;border:1px solid #ddd;border-radius:10px;background:#fafafa;font-size:.9rem">
-<b>Flag Reference</b><br>
-🔵 Low-range reading = ตัวเลขอยู่ในช่วงความดันต่ำ<br>
-🟢 Normal-range = ตัวเลขอยู่ในช่วงปกติ<br>
-🟡 Elevated-range reading = ตัวเลขสูงกว่าปกติ<br>
-🟠 Hypertension-range reading = ตัวเลขอยู่ในช่วงค่าความดันสูง<br><br>
-<small>Flag ใช้ช่วยอ่านและจัดกลุ่มค่าความดัน ไม่ใช่การวินิจฉัยโรค</small>
-</div>
+
 
 <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:12px">
 <button onclick="saveReportImage()">Save Report Image</button>
@@ -137,6 +130,14 @@ th,td{padding:10px;border-bottom:1px solid #eee;text-align:left;font-size:.9rem}
 </thead>
 <tbody id="tbody"></tbody>
 </table>
+<div style="margin-top:10px;padding:10px;border:1px solid #ddd;border-radius:10px;background:#fafafa;font-size:.9rem">
+<b>Flag Reference</b><br>
+🔵 Low-range reading = ตัวเลขอยู่ในช่วงความดันต่ำ<br>
+🟢 Normal-range = ตัวเลขอยู่ในช่วงปกติ<br>
+🟡 Elevated-range reading = ตัวเลขสูงกว่าปกติ<br>
+🟠 Hypertension-range reading = ตัวเลขอยู่ในช่วงค่าความดันสูง<br><br>
+<small>Flag ใช้ช่วยอ่านและจัดกลุ่มค่าความดัน ไม่ใช่การวินิจฉัยโรค</small>
+</div>
 </div>
 </div>
 
@@ -172,6 +173,8 @@ function autoSession(){
 
 function saveReading(){
  let data=JSON.parse(localStorage.getItem('bpData')||'[]');
+
+ autoSession();
 
  let r={
   id:createID(),
@@ -309,26 +312,24 @@ function renderTable(data){
 
 function renderChart(data){
  let ctx=gid('chart');
- let status=gid('chartStatus');
 
  if(chartObj) chartObj.destroy();
 
- try{
-  chartObj=new Chart(ctx,{options:{scales:{y:{min:40,max:200}}}},
-   type:'line',
-   data:{
-    labels:data.map(x=>x.date+' '+x.time).reverse(),
-    datasets:[
-      {label:'SYS',data:data.map(x=>x.sys).reverse()},
-      {label:'DIA',data:data.map(x=>x.dia).reverse()}
-    ]
+ chartObj=new Chart(ctx,{
+  type:'line',
+  options:{
+   scales:{
+    y:{min:40,max:200}
    }
-  });
-  status.innerHTML='Graph loaded';
- }catch(e){
-  status.innerHTML='Graph unavailable';
-  console.error(e);
- }
+  },
+  data:{
+   labels:data.map(x=>x.date+' '+x.time).reverse(),
+   datasets:[
+    {label:'SYS',data:data.map(x=>x.sys).reverse()},
+    {label:'DIA',data:data.map(x=>x.dia).reverse()}
+   ]
+  }
+ });
 }
 
 function saveReportImage(){
