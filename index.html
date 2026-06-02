@@ -15,7 +15,7 @@ label{display:block;margin:10px 0 5px}
 input,select,textarea,button{width:100%;padding:12px;border-radius:10px;border:1px solid #ccc;font:inherit;box-sizing:border-box}
 textarea{min-height:60px}
 button{background:#2563eb;color:#fff;border:none;font-weight:600}
-.tablewrap{overflow:visible;max-height:520px}
+.tablewrap{overflow:visible;max-height:none;}
 table{width:100%;border-collapse:collapse}
 th,td{padding:10px;border-bottom:1px solid #eee;text-align:left;font-size:.9rem}
 .session{border-left:4px solid #2563eb;padding-left:10px;margin-bottom:12px}.icon-delete{background:transparent!important;color:#666!important;border:none!important;padding:0!important;width:auto!important;cursor:pointer;font-size:16px}
@@ -617,6 +617,48 @@ window.addEventListener('load',()=>{
       rows.forEach(r=>tbody.appendChild(r));
     }
   },800);
+});
+</script>
+
+
+<script>
+window.addEventListener('load',()=>{
+
+  // Evidence table full height
+  const ev=document.querySelector('.evidence-table-container') || 
+           document.querySelector('#evidenceTable')?.parentElement;
+  if(ev){
+    ev.style.maxHeight='none';
+    ev.style.overflow='visible';
+  }
+
+  // Report export = temporarily expand full table
+  if(typeof saveReportImage==='function'){
+    const oldSave=saveReportImage;
+    saveReportImage=async function(){
+      const wrap=document.querySelector('.evidence-table-container') || 
+                 document.querySelector('#evidenceTable')?.parentElement;
+      const oldH=wrap?.style.maxHeight;
+      const oldO=wrap?.style.overflow;
+      if(wrap){
+        wrap.style.maxHeight='none';
+        wrap.style.overflow='visible';
+      }
+      await oldSave();
+      if(wrap){
+        wrap.style.maxHeight=oldH;
+        wrap.style.overflow=oldO;
+      }
+    }
+  }
+
+  // Graph export extra right/top margin
+  if(typeof saveGraph==='function' && window.chart){
+    chart.options.layout = chart.options.layout || {};
+    chart.options.layout.padding = {top:35,right:55,left:15,bottom:25};
+    chart.update();
+  }
+
 });
 </script>
 
