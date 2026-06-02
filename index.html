@@ -19,6 +19,28 @@ button{background:#2563eb;color:#fff;border:none;font-weight:600}
 table{width:100%;border-collapse:collapse}
 th,td{padding:10px;border-bottom:1px solid #eee;text-align:left;font-size:.9rem}
 .session{border-left:4px solid #2563eb;padding-left:10px;margin-bottom:12px}.icon-delete{background:transparent!important;color:#666!important;border:none!important;padding:0!important;width:auto!important;cursor:pointer;font-size:16px}
+
+@media (max-width:899px){
+  .container{
+    width:100% !important;
+    max-width:none !important;
+    padding:12px !important;
+    box-sizing:border-box !important;
+  }
+  .grid{
+    grid-template-columns:42% 58% !important;
+    gap:12px !important;
+    align-items:start !important;
+  }
+  .grid > .card{
+    min-width:0 !important;
+    width:100% !important;
+  }
+  header{
+    padding-left:12px !important;
+    padding-right:12px !important;
+  }
+}
 </style>
 <script src="https://cdn.jsdelivr.net/npm/html2canvas"></script>
 <style>
