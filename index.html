@@ -18,7 +18,7 @@ button{background:#2563eb;color:#fff;border:none;font-weight:600}
 .tablewrap{overflow:auto;max-height:520px}
 table{width:100%;border-collapse:collapse}
 th,td{padding:10px;border-bottom:1px solid #eee;text-align:left;font-size:.9rem}
-.session{border-left:4px solid #2563eb;padding-left:10px;margin-bottom:12px}.icon-delete{background:transparent!important;color:#666!important;border:1px solid #ddd!important;padding:6px 8px!important;width:auto!important}
+.session{border-left:4px solid #2563eb;padding-left:10px;margin-bottom:12px}.icon-delete{background:transparent!important;color:#666!important;border:none!important;padding:0!important;width:auto!important;cursor:pointer;font-size:16px}
 </style>
 <script src="https://cdn.jsdelivr.net/npm/html2canvas"></script></head>
 <body>
@@ -148,6 +148,7 @@ th,td{padding:10px;border-bottom:1px solid #eee;text-align:left;font-size:.9rem}
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels"></script>
 <script>
 function gid(x){return document.getElementById(x)}
 
@@ -314,8 +315,17 @@ function renderChart(data){
  if(chartObj) chartObj.destroy();
 
  chartObj=new Chart(ctx,{
+  plugins:[ChartDataLabels],
   type:'line',
   options:{
+   plugins:{
+    datalabels:{
+      anchor:'end',
+      align:'top',
+      formatter:(v)=>v,
+      font:{size:10}
+    }
+   },
    scales:{
     y:{min:40,max:200}
    }
@@ -366,6 +376,21 @@ function deleteReading(id){
  localStorage.setItem('bpData',JSON.stringify(data));
  renderAll();
 }
+
+
+(function migrateLegacyRecords(){
+ let data=JSON.parse(localStorage.getItem('bpData')||'[]');
+ let changed=false;
+ data.forEach((r,i)=>{
+   if(!r.id){
+     r.id='LEGACY-'+i+'-'+Date.now();
+     changed=true;
+   }
+ });
+ if(changed){
+   localStorage.setItem('bpData',JSON.stringify(data));
+ }
+})();
 
 gid('date').valueAsDate=new Date();
 renderAll();
