@@ -185,7 +185,7 @@ function autoSession(){
 }
 
 function saveReading(){
- let data=JSON.parse(localStorage.getItem('bpData')||'[]');
+ let data=window.bpDataCache||[];
 
  autoSession();
 
@@ -211,7 +211,7 @@ function saveReading(){
  }
 
  data.unshift(r);
- localStorage.setItem('bpData',JSON.stringify(data));
+ // cloud managed
 
  gid('sys').value='';
  gid('dia').value='';
@@ -224,7 +224,7 @@ function saveReading(){
 }
 
 function filteredData(){
- let data=JSON.parse(localStorage.getItem('bpData')||'[]');
+ let data=window.bpDataCache||[];
  let f=gid('filter').value;
  if(f!=='all') data=data.filter(x=>x.location===f);
  return data;
@@ -385,15 +385,15 @@ function saveGraphImage(){
 
 function deleteReading(id){
  if(!confirm('ลบรายการนี้?')) return;
- let data=JSON.parse(localStorage.getItem('bpData')||'[]');
+ let data=window.bpDataCache||[];
  data=data.filter(x=>x.id!==id);
- localStorage.setItem('bpData',JSON.stringify(data));
+ // cloud managed
  renderAll();
 }
 
 
 (function migrateLegacyRecords(){
- let data=JSON.parse(localStorage.getItem('bpData')||'[]');
+ let data=window.bpDataCache||[];
  let changed=false;
  data.forEach((r,i)=>{
    if(!r.id){
@@ -402,7 +402,7 @@ function deleteReading(id){
    }
  });
  if(changed){
-   localStorage.setItem('bpData',JSON.stringify(data));
+   // cloud managed
  }
 })();
 
@@ -414,6 +414,7 @@ renderAll();
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-app.js";
 import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-auth.js";
+import { getFirestore, collection, addDoc, deleteDoc, doc, onSnapshot, query, orderBy } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-firestore.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyBbA_HXqmOIKJrJ8D12tlk7d_vUXaVsi0E",
@@ -421,40 +422,80 @@ const firebaseConfig = {
   projectId: "bp-monitor-family",
   storageBucket: "bp-monitor-family.firebasestorage.app",
   messagingSenderId: "456193142332",
-  appId: "1:456193142332:web:162bd74937e14a0fd39d39",
-  measurementId: "G-B09XW0E71X"
+  appId: "1:456193142332:web:162bd74937e14a0fd39d39"
 };
 
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
-signInAnonymously(auth).catch(console.error);
+const db = getFirestore(app);
+window.bpDataCache=[];
 
-function updateFamilyUI(){
- const code = localStorage.getItem('familyCode');
- const badge = document.getElementById('familyBadge');
- if(badge && code) badge.textContent='Family: '+code;
-}
+async function startSync(){
+ await signInAnonymously(auth);
 
-window.addEventListener('load',()=>{
- let code = localStorage.getItem('familyCode');
+ let code=localStorage.getItem('familyCode');
  const modal=document.getElementById('familySetup');
- if(!code){ modal.style.display='flex'; }
- else { updateFamilyUI(); }
+
+ function updateBadge(){
+   document.getElementById('familyBadge').textContent='Family: '+code;
+ }
+
+ if(!code){
+   modal.style.display='flex';
+ } else {
+   updateBadge();
+   connect(code);
+ }
 
  document.getElementById('familyContinueBtn')?.addEventListener('click',()=>{
-   const v=document.getElementById('familyCodeInput').value.trim();
-   if(!v) return alert('กรุณากรอก Family Code');
-   localStorage.setItem('familyCode',v);
-   updateFamilyUI();
+   code=document.getElementById('familyCodeInput').value.trim();
+   if(!code) return alert('กรุณากรอก Family Code');
+   localStorage.setItem('familyCode',code);
+   updateBadge();
    modal.style.display='none';
+   connect(code);
  });
 
  document.getElementById('copyFamilyBtn')?.addEventListener('click',()=>{
-   const code=localStorage.getItem('familyCode')||'';
-   navigator.clipboard.writeText(code);
+   navigator.clipboard.writeText(code||'');
    alert('คัดลอก Family Code แล้ว');
  });
-});
+
+ function connect(familyCode){
+   const q=query(collection(db,'families',familyCode,'readings'),orderBy('createdAt','desc'));
+   onSnapshot(q,(snap)=>{
+     window.bpDataCache=snap.docs.map(d=>({id:d.id,...d.data()}));
+     renderAll();
+   });
+   window.saveReading=async function(){
+      autoSession();
+      let r={
+       createdAt:Date.now(),
+       date:gid('date').value,
+       time:gid('time').value,
+       session:gid('session').value,
+       round:gid('round').value,
+       sys:+gid('sys').value,
+       dia:+gid('dia').value,
+       pulse:gid('pulse').value,
+       location:gid('location').value,
+       medication:gid('medication').value,
+       rest:gid('rest').value,
+       context:gid('context').value,
+       note:gid('note').value
+      };
+      if(!r.date||!r.sys||!r.dia){alert('กรอก Date/SYS/DIA');return;}
+      await addDoc(collection(db,'families',familyCode,'readings'),r);
+      gid('sys').value='';gid('dia').value='';gid('pulse').value='';gid('note').value='';
+   }
+   window.deleteReading=async function(id){
+      if(!confirm('ลบรายการนี้?')) return;
+      await deleteDoc(doc(db,'families',familyCode,'readings',id));
+   }
+ }
+}
+
+window.addEventListener('load',startSync);
 </script>
 
 </body>
