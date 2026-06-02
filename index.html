@@ -74,14 +74,26 @@ th,td{padding:10px;border-bottom:1px solid var(--line);font-size:.92rem;text-ali
 <h2>เพิ่มค่าความดัน</h2>
 <label>วันที่</label>
 <input type="date" id="date">
-<label>เวลา</label>
+<label>เวลา (เช่น 21:33 น.)</label>
 <input type="time" id="time">
-<label>Systolic</label>
-<input type="number" id="sys">
-<label>Diastolic</label>
-<input type="number" id="dia">
-<label>Pulse</label>
-<input type="number" id="pulse">
+<div class="muted" style="margin-top:6px;font-size:.85rem">
+ก่อนวัดให้นั่งนิ่ง 3–5 นาที • ถ้าวัดหลายครั้งให้บันทึกแต่ละค่าแยกกันจนได้ค่าที่ใกล้กัน
+</div>
+
+<label>ครั้งที่วัด</label>
+<select id="round">
+<option>ครั้งที่ 1</option>
+<option>ครั้งที่ 2</option>
+<option>ครั้งที่ 3</option>
+<option>เพิ่มเติม</option>
+</select>
+
+<label>Systolic (เลขบน)</label>
+<input type="number" inputmode="numeric" id="sys">
+<label>Diastolic (เลขล่าง)</label>
+<input type="number" inputmode="numeric" id="dia">
+<label>Pulse (ชีพจร / เลขกลาง)</label>
+<input type="number" inputmode="numeric" id="pulse">
 
 <label>สถานที่วัด</label>
 <select id="location">
@@ -92,13 +104,34 @@ th,td{padding:10px;border-bottom:1px solid var(--line);font-size:.92rem;text-ali
 
 <label>พักก่อนวัด</label>
 <select id="rest">
-<option>≥ 5 min</option>
+<option>พัก 5 นาทีขึ้นไป</option>
 <option>&lt; 5 min</option>
-<option>No rest</option>
+<option>ไม่ได้พักก่อนวัด</option>
 </select>
 
-<label>บริบทเพิ่มเติม</label>
-<textarea id="note" placeholder="เช่น เดินไกล รีบ ขึ้นบันได หลังอาหาร ฯลฯ"></textarea>
+
+<label>ท่าทางก่อนวัด</label>
+<select id="posture">
+<option>นั่ง</option>
+<option>ยืน</option>
+<option>นอน</option>
+<option>อื่น ๆ</option>
+</select>
+
+<label>บริบทก่อนวัด</label>
+<select id="contextType">
+<option>ปกติ</option>
+<option>เดิน / รีบ</option>
+<option>ขึ้นบันได / ออกแรง</option>
+<option>หลังอาหาร</option>
+<option>เครียด / กังวล</option>
+<option>ดื่มชา / กาแฟ</option>
+<option>อื่น ๆ</option>
+</select>
+
+<label>รายละเอียดเพิ่มเติม (ถ้ามี)</label>
+<textarea id="note" placeholder="พิมพ์เพิ่มได้เมื่อจำเป็น"></textarea>
+
 
 <button onclick="saveReading()">Save Reading</button>
 </div>
@@ -111,13 +144,16 @@ th,td{padding:10px;border-bottom:1px solid var(--line);font-size:.92rem;text-ali
 <table id="table">
 <thead>
 <tr>
-<th>Date</th><th>BP</th><th>Pulse</th><th>Location</th><th>Rest</th><th>Note</th>
+<th>Date/Time</th><th>ครั้ง</th><th>BP</th><th>Pulse</th><th>Location</th><th>Rest</th><th>Posture</th><th>Context</th><th>Note</th>
 </tr>
 </thead>
 <tbody></tbody>
 </table>
 </div>
-<button class="secondary" style="margin-top:14px" onclick="generateReport()">Generate Report</button>
+<div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:14px">
+<button class="secondary" onclick="generateReport()">Generate Report</button>
+<button style="background:#dc2626" onclick="resetData()">Reset Data</button>
+</div>
 <div id="report" style="margin-top:16px;white-space:pre-wrap"></div>
 <div class="footer">
 ข้อมูลเก็บใน browser เครื่องนี้เท่านั้น • เว็บนี้ใช้จัดระเบียบข้อมูลและสร้างรายงาน ไม่ใช่ระบบวินิจฉัยโรค
@@ -125,9 +161,9 @@ th,td{padding:10px;border-bottom:1px solid var(--line);font-size:.92rem;text-ali
 
 <div class="card" style="margin-top:16px">
 <h2>Cloud Sync (Prototype)</h2>
-<div class="muted">สำหรับแชร์ข้อมูลระหว่างน้าและแม่ผ่าน Supabase / cloud database (v0.2 architecture placeholder)</div>
+<div class="muted">ตั้งรหัสครอบครัวเพื่อใช้เชื่อมข้อมูลระหว่างน้าและแม่ (จะใช้ตอนเปิด cloud sync จริง) (v0.2 architecture placeholder)</div>
 <label>Patient / Family Code</label>
-<input type="text" id="familyCode" placeholder="เช่น NAA-001">
+<input type="text" id="familyCode" placeholder="ตั้งชื่อรหัสครอบครัวเอง เช่น NAA-001 หรือ MomAuntBP">
 <button onclick="saveFamilyCode()">Save Code</button>
 <div id="syncStatus" style="margin-top:10px"></div>
 </div>
@@ -157,8 +193,8 @@ function load(){
 }
 function saveReading(){
  const r={
-  date:date.value,time:time.value,sys:+sys.value,dia:+dia.value,
-  pulse:pulse.value,location:location.value,rest:rest.value,note:note.value
+  date:date.value,time:time.value,round:round.value,sys:+sys.value,dia:+dia.value,
+  pulse:pulse.value,location:location.value,rest:rest.value,posture:posture.value,contextType:contextType.value,note:note.value
  };
  if(!r.date||!r.sys||!r.dia){alert("กรอกวันที่และ BP");return;}
  let data=JSON.parse(localStorage.getItem("bpData")||"[]");
@@ -172,10 +208,13 @@ function render(data){
  data.forEach(r=>{
   tbody.innerHTML+=`<tr>
   <td>${r.date} ${r.time||""}</td>
+  <td>${r.round||"-"}</td>
   <td><span class="badge">${r.sys}/${r.dia}</span></td>
   <td>${r.pulse||"-"}</td>
   <td>${r.location}</td>
   <td>${r.rest}</td>
+  <td>${r.posture||"-"}</td>
+  <td>${r.contextType||"-"}</td>
   <td>${r.note||"-"}</td></tr>`;
   if(r.sys&&r.dia){s+=+r.sys;d+=+r.dia;c++;}
  });
@@ -197,12 +236,21 @@ Total readings: ${data.length}
 Average BP: ${avgS}/${avgD}
 
 Readings:
-` + data.map(r=>`${r.date} ${r.time||""} | ${r.sys}/${r.dia} | ${r.location} | ${r.note||""}`).join("\n") +
+` + data.map(r=>`${r.date} ${r.time||""} | ${r.round||""} | ${r.sys}/${r.dia} | ${r.location} | ${r.note||""}`).join("\n") +
 
 `\n\nPrepared for physician review.
 (Generated from home monitoring records)`;
 }
+
+function resetData(){
+ if(confirm("ลบข้อมูลทั้งหมดในเครื่องนี้หรือไม่?")){
+   localStorage.removeItem("bpData");
+   render([]);
+   report.innerText="";
+ }
+}
 date.valueAsDate=new Date();
+
 load();
 </script>
 </body>
