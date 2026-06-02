@@ -411,6 +411,9 @@ renderAll();
 </script>
 
 
+
+
+
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-app.js";
 import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-auth.js";
@@ -428,74 +431,105 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
-window.bpDataCache=[];
 
-async function startSync(){
- await signInAnonymously(auth);
+window.bpDataCache = [];
 
- let code=localStorage.getItem('familyCode');
- const modal=document.getElementById('familySetup');
+async function bootSync(){
+ try{
+   await signInAnonymously(auth);
 
- function updateBadge(){
-   document.getElementById('familyBadge').textContent='Family: '+code;
- }
+   let familyCode = localStorage.getItem('familyCode');
+   const badge = document.getElementById('familyBadge');
+   const modal = document.getElementById('familySetup');
 
- if(!code){
-   modal.style.display='flex';
- } else {
-   updateBadge();
-   connect(code);
- }
+   function setBadge(){
+     if(badge && familyCode){
+       badge.textContent = 'Family: ' + familyCode;
+     }
+   }
 
- document.getElementById('familyContinueBtn')?.addEventListener('click',()=>{
-   code=document.getElementById('familyCodeInput').value.trim();
-   if(!code) return alert('กรุณากรอก Family Code');
-   localStorage.setItem('familyCode',code);
-   updateBadge();
-   modal.style.display='none';
-   connect(code);
- });
+   function connect(code){
+      const q=query(collection(db,'families',code,'readings'),orderBy('createdAt','desc'));
 
- document.getElementById('copyFamilyBtn')?.addEventListener('click',()=>{
-   navigator.clipboard.writeText(code||'');
-   alert('คัดลอก Family Code แล้ว');
- });
+      onSnapshot(q,(snap)=>{
+         const cloud=snap.docs.map(d=>({id:d.id,...d.data()}));
+         window.bpDataCache=cloud;
+         localStorage.setItem('bpData', JSON.stringify(cloud));
+         if(typeof renderAll==='function') renderAll();
+      });
 
- function connect(familyCode){
-   const q=query(collection(db,'families',familyCode,'readings'),orderBy('createdAt','desc'));
-   onSnapshot(q,(snap)=>{
-     window.bpDataCache=snap.docs.map(d=>({id:d.id,...d.data()}));
-     renderAll();
+      window.deleteReading = async function(id){
+         if(!confirm('ลบรายการนี้?')) return;
+         await deleteDoc(doc(db,'families',code,'readings',id));
+      }
+
+      const btn=document.querySelector('button[onclick="saveReading()"]');
+      if(btn){
+        btn.onclick = async function(){
+          try{
+            const r={
+              createdAt: Date.now(),
+              date: gid('date').value,
+              time: gid('time').value,
+              session: gid('session').value,
+              round: gid('round').value,
+              sys: Number(gid('sys').value),
+              dia: Number(gid('dia').value),
+              pulse: gid('pulse').value,
+              location: gid('location').value,
+              medication: gid('medication').value,
+              rest: gid('rest').value,
+              context: gid('context').value,
+              note: gid('note').value
+            };
+
+            if(!r.date || !r.sys || !r.dia){
+              alert('กรอก Date / SYS / DIA');
+              return;
+            }
+
+            await addDoc(collection(db,'families',code,'readings'), r);
+
+            gid('sys').value='';
+            gid('dia').value='';
+            gid('pulse').value='';
+            gid('note').value='';
+
+          }catch(e){
+            console.error(e);
+            alert('Save Error: '+e.message);
+          }
+        }
+      }
+   }
+
+   if(!familyCode){
+      modal.style.display='flex';
+      document.getElementById('familyContinueBtn').onclick=function(){
+        familyCode=document.getElementById('familyCodeInput').value.trim();
+        if(!familyCode) return;
+        localStorage.setItem('familyCode',familyCode);
+        modal.style.display='none';
+        setBadge();
+        connect(familyCode);
+      }
+   } else {
+      setBadge();
+      connect(familyCode);
+   }
+
+   document.getElementById('copyFamilyBtn')?.addEventListener('click',()=>{
+      navigator.clipboard.writeText(familyCode||'');
+      alert('คัดลอก Family Code แล้ว');
    });
-   window.saveReading=async function(){
-      autoSession();
-      let r={
-       createdAt:Date.now(),
-       date:gid('date').value,
-       time:gid('time').value,
-       session:gid('session').value,
-       round:gid('round').value,
-       sys:+gid('sys').value,
-       dia:+gid('dia').value,
-       pulse:gid('pulse').value,
-       location:gid('location').value,
-       medication:gid('medication').value,
-       rest:gid('rest').value,
-       context:gid('context').value,
-       note:gid('note').value
-      };
-      if(!r.date||!r.sys||!r.dia){alert('กรอก Date/SYS/DIA');return;}
-      await addDoc(collection(db,'families',familyCode,'readings'),r);
-      gid('sys').value='';gid('dia').value='';gid('pulse').value='';gid('note').value='';
-   }
-   window.deleteReading=async function(id){
-      if(!confirm('ลบรายการนี้?')) return;
-      await deleteDoc(doc(db,'families',familyCode,'readings',id));
-   }
+
+ }catch(e){
+   console.error(e);
+   alert('Firebase Boot Error: '+e.message);
  }
 }
 
-window.addEventListener('load',startSync);
+window.addEventListener('load', bootSync);
 </script>
 
 </body>
