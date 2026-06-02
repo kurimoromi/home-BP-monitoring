@@ -15,7 +15,7 @@ label{display:block;margin:10px 0 5px}
 input,select,textarea,button{width:100%;padding:12px;border-radius:10px;border:1px solid #ccc;font:inherit;box-sizing:border-box}
 textarea{min-height:60px}
 button{background:#2563eb;color:#fff;border:none;font-weight:600}
-.tablewrap{overflow:auto;max-height:520px}
+.tablewrap{overflow:visible;max-height:520px}
 table{width:100%;border-collapse:collapse}
 th,td{padding:10px;border-bottom:1px solid #eee;text-align:left;font-size:.9rem}
 .session{border-left:4px solid #2563eb;padding-left:10px;margin-bottom:12px}.icon-delete{background:transparent!important;color:#666!important;border:none!important;padding:0!important;width:auto!important;cursor:pointer;font-size:16px}
@@ -51,11 +51,12 @@ th,td{padding:10px;border-bottom:1px solid #eee;text-align:left;font-size:.9rem}
 <label>Date</label>
 <input type="date" id="date">
 
-<label>Time 
-    <button type="button" id="minus5Btn" style="width:auto;padding:4px 8px;margin-left:8px">−5m</button>
-    <button type="button" id="plus5Btn" style="width:auto;padding:4px 8px">+5m</button>
-    </label>
+<label>Time</label>
 <input type="time" id="time" onchange="autoSession()">
+<div style="display:flex;gap:8px;margin-top:6px">
+<button type="button" id="minus5Btn" style="width:auto;padding:6px 12px">−5m</button>
+<button type="button" id="plus5Btn" style="width:auto;padding:6px 12px">+5m</button>
+</div>
 
 <label>Session</label>
 <select id="session">
@@ -66,12 +67,14 @@ th,td{padding:10px;border-bottom:1px solid #eee;text-align:left;font-size:.9rem}
 </select>
 
 <label>Round</label>
-<select id="round">
-<option>1</option>
-<option>2</option>
-<option>3</option>
-<option>More</option>
-</select>
+
+<div id="roundButtons" style="display:flex;gap:8px;margin-top:6px">
+<button type="button" class="roundBtn activeRound" data-round="1">1</button>
+<button type="button" class="roundBtn" data-round="2">2</button>
+<button type="button" class="roundBtn" data-round="3">3</button>
+<input type="hidden" id="round" value="1">
+</div>
+
 
 <label>SYS (เลขบน)</label>
 <input type="number" id="sys" inputmode="numeric" pattern="[0-9]*">
@@ -554,6 +557,45 @@ window.addEventListener('load',()=>{
  minus?.addEventListener('click',()=>shift(-5));
 });
 </script>
+
+
+<script>
+window.addEventListener('load',()=>{
+ // round buttons
+ document.querySelectorAll('.roundBtn').forEach(btn=>{
+   btn.addEventListener('click',()=>{
+      document.querySelectorAll('.roundBtn').forEach(b=>b.classList.remove('activeRound'));
+      btn.classList.add('activeRound');
+      gid('round').value=btn.dataset.round;
+   });
+ });
+
+ // sort oldest first + no table clipping
+ if(typeof renderTable==='function'){
+   const oldRenderTable=renderTable;
+   renderTable=function(){
+      oldRenderTable();
+      const tbody=document.querySelector('#evidenceTable tbody');
+      if(!tbody) return;
+      const rows=[...tbody.querySelectorAll('tr')];
+      rows.reverse();
+      rows.forEach(r=>tbody.appendChild(r));
+   }
+ }
+
+ // chart export extra padding
+ if(window.chart && chart.options && chart.options.layout){
+    chart.options.layout.padding={right:40,left:10,top:20,bottom:20};
+    chart.update();
+ }
+});
+</script>
+<style>
+.activeRound{
+ background:#2f64e3 !important;
+ color:#fff !important;
+}
+</style>
 
 </body>
 </html>
