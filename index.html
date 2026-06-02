@@ -73,6 +73,34 @@ th,td{padding:10px;border-bottom:1px solid #eee;text-align:left;font-size:.9rem}
 }
 </style>
 
+
+<style>
+/* v1.3 real layout expansion */
+@media (min-width:900px){
+  .top-section,
+  .main-section,
+  .workspace-grid,
+  .top-grid{
+    display:grid!important;
+    grid-template-columns:32% 68%!important;
+    gap:18px!important;
+    align-items:start!important;
+  }
+
+  .monitoring-dashboard,
+  .dashboard-card{
+    width:100%!important;
+    max-width:none!important;
+  }
+
+  .monitoring-dashboard canvas,
+  #bpChart{
+    width:100%!important;
+    min-height:360px!important;
+  }
+}
+</style>
+
 </head>
 <body>
 <header>
@@ -939,6 +967,47 @@ window.addEventListener('load',()=>{
 
    chart.resize();
    chart.update();
+ }
+
+});
+</script>
+
+
+<script>
+window.addEventListener('load',()=>{
+
+ if(window.chart){
+
+    // Live graph wider + breathing room
+    chart.options.maintainAspectRatio=false;
+    chart.options.layout = {
+      padding:{
+        top:40,
+        right:170,
+        left:30,
+        bottom:65
+      }
+    };
+
+    // only last label move inward
+    if(chart.options.plugins && chart.options.plugins.datalabels){
+      chart.options.plugins.datalabels = {
+        ...chart.options.plugins.datalabels,
+        clip:false,
+        clamp:false,
+        align:(ctx)=>{
+          const last=ctx.dataset.data.length-1;
+          return ctx.dataIndex===last ? 'left' : 'top';
+        },
+        offset:(ctx)=>{
+          const last=ctx.dataset.data.length-1;
+          return ctx.dataIndex===last ? 22 : 6;
+        }
+      };
+    }
+
+    chart.resize();
+    chart.update();
  }
 
 });
