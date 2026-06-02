@@ -138,13 +138,27 @@ th,td{padding:10px;border-bottom:1px solid var(--line);font-size:.92rem;text-ali
 
 </div>
 
+
+<div class="card" style="margin-top:16px">
+<h2>Report Filter</h2>
+<label>แหล่งข้อมูลสำหรับดู Graph / Report</label>
+<select id="reportFilter">
+<option value="Home">Home only</option>
+<option value="Clinic">Clinic only</option>
+<option value="Hospital">Hospital only</option>
+<option value="all">All sources</option>
+</select>
+<div class="muted" style="margin-top:8px">
+Graph และ report จะใช้ข้อมูลตาม filter นี้
+</div>
+</div>
 <div class="card" style="margin-top:16px">
 <h2>Timeline / Log</h2>
 <div class="table-wrap">
 <table id="table">
 <thead>
 <tr>
-<th>Date/Time</th><th>ครั้ง</th><th>BP</th><th>Pulse</th><th>Location</th><th>Rest</th><th>Posture</th><th>Context</th><th>Note</th>
+<th>Date/Time</th><th>ครั้ง</th><th>BP</th><th>Pulse</th><th>Location</th><th>Rest</th><th>Posture</th><th>Context</th><th>Note</th><th>Flag</th><th>Delete</th>
 </tr>
 </thead>
 <tbody></tbody>
@@ -202,11 +216,28 @@ function saveReading(){
  localStorage.setItem("bpData",JSON.stringify(data));
  render(data);
 }
+
+function readingFlag(sys,dia){
+ if(sys<100 || dia<60) return {label:"Low reading range", color:"#dbeafe"};
+ if(sys>=140 || dia>=90) return {label:"High reading range", color:"#fed7aa"};
+ if(sys>=120 || dia>=80) return {label:"Elevated range", color:"#fef3c7"};
+ return {label:"Within normal range", color:"#dcfce7"};
+}
+function deleteRow(idx){
+ let data=JSON.parse(localStorage.getItem("bpData")||"[]");
+ if(confirm("ลบรายการนี้หรือไม่?")){
+   data.splice(idx,1);
+   localStorage.setItem("bpData",JSON.stringify(data));
+   render(data);
+ }
+}
 function render(data){
  tbody.innerHTML="";
  let s=0,d=0,c=0;
- data.forEach(r=>{
-  tbody.innerHTML+=`<tr>
+ data.forEach((r,idx)=>{
+  let flag=readingFlag(r.sys,r.dia);
+  let id='BP-'+String(idx+1).padStart(3,'0');
+  tbody.innerHTML+=`<tr style="background:${flag.color}">
   <td>${r.date} ${r.time||""}</td>
   <td>${r.round||"-"}</td>
   <td><span class="badge">${r.sys}/${r.dia}</span></td>
@@ -215,33 +246,41 @@ function render(data){
   <td>${r.rest}</td>
   <td>${r.posture||"-"}</td>
   <td>${r.contextType||"-"}</td>
-  <td>${r.note||"-"}</td></tr>`;
+  <td>${(r.note||"-")}<br><small>${id}</small></td>
+  <td>${flag.label}</td>
+  <td><button style="background:#dc2626;padding:6px 10px;width:auto" onclick="deleteRow(${idx})">ลบ</button></td>
+  </tr>`;
   if(r.sys&&r.dia){s+=+r.sys;d+=+r.dia;c++;}
  });
- if(c){
-  avgDisplay.innerText=Math.round(s/c)+" / "+Math.round(d/c);
- }
+ if(c){avgDisplay.innerText=Math.round(s/c)+" / "+Math.round(d/c);}
  countDisplay.innerText=c+" readings";
 }
+
 function generateReport(){
  let data=JSON.parse(localStorage.getItem("bpData")||"[]");
- if(!data.length){report.innerText="ยังไม่มีข้อมูล";return;}
+ let filter=document.getElementById("reportFilter").value;
+ if(filter!=="all"){ data=data.filter(r=>r.location===filter); }
+ if(!data.length){report.innerHTML="ยังไม่มีข้อมูล";return;}
  let s=0,d=0;
- data.forEach(r=>{s+=+r.sys;d+=+r.dia;});
+ data.forEach(r=>{s+=+r.sys; d+=+r.dia;});
  let avgS=Math.round(s/data.length), avgD=Math.round(d/data.length);
- report.innerText=
-`Home Blood Pressure Report
-
-Total readings: ${data.length}
-Average BP: ${avgS}/${avgD}
-
-Readings:
-` + data.map(r=>`${r.date} ${r.time||""} | ${r.round||""} | ${r.sys}/${r.dia} | ${r.location} | ${r.note||""}`).join("\n") +
-
-`\n\nPrepared for physician review.
-(Generated from home monitoring records)`;
+ let rows=data.map(r=>{
+  let flag=readingFlag(r.sys,r.dia);
+  return `<tr style="background:${flag.color}">
+  <td>${r.date}</td><td>${r.time||""}</td><td>${r.sys}/${r.dia}</td><td>${flag.label}</td><td>${r.location}</td></tr>`;
+ }).join("");
+ report.innerHTML=`
+ <div style="border:1px solid #ddd;border-radius:14px;padding:16px;background:#fff">
+ <h3>Monitoring Dashboard</h3>
+ <div><b>Source:</b> ${filter}</div>
+ <div><b>Total readings:</b> ${data.length}</div>
+ <div><b>Average:</b> ${avgS}/${avgD}</div>
+ <div style="margin-top:14px"><b>Evidence Table</b></div>
+ <table style="width:100%;border-collapse:collapse;margin-top:8px">
+ <tr><th>Date</th><th>Time</th><th>BP</th><th>Flag</th><th>Location</th></tr>
+ ${rows}
+ </table></div>`;
 }
-
 function resetData(){
  if(confirm("ลบข้อมูลทั้งหมดในเครื่องนี้หรือไม่?")){
    localStorage.removeItem("bpData");
