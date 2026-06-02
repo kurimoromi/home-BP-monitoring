@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="th">
 <head>
@@ -7,21 +6,21 @@
 <title>BP Monitor Phase 2</title>
 <style>
 body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;background:#f5f6f8;margin:0;color:#222}
-header{background:#fff;padding:18px;border-bottom:1px solid #ddd;position:sticky;top:0;z-index:100}
+header{background:#fff;padding:18px;border-bottom:1px solid #ddd;position:sticky;top:0}
 .container{max-width:1200px;margin:auto;padding:16px}
 .card{background:#fff;border:1px solid #ddd;border-radius:16px;padding:16px;margin-bottom:16px}
 .grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
-label{display:block;margin:10px 0 5px;font-weight:600}
+label{display:block;margin:10px 0 5px}
 input,select,textarea,button{width:100%;padding:12px;border-radius:10px;border:1px solid #ccc;font:inherit;box-sizing:border-box}
 textarea{min-height:60px}
-button{background:#2563eb;color:#fff;border:none;font-weight:600;cursor:pointer}
-button:hover{background:#1d4ed8}
+button{background:#2563eb;color:#fff;border:none;font-weight:600}
 .tablewrap{overflow:visible;max-height:none;}
 table{width:100%;border-collapse:collapse}
 th,td{padding:10px;border-bottom:1px solid #eee;text-align:left;font-size:.9rem}
-.session{border-left:4px solid #2563eb;padding-left:10px;margin-bottom:12px}
-.icon-delete{background:transparent!important;color:#666!important;border:none!important;padding:0!important;width:auto!important;cursor:pointer;font-size:16px}
-
+.session{border-left:4px solid #2563eb;padding-left:10px;margin-bottom:12px}.icon-delete{background:transparent!important;color:#666!important;border:none!important;padding:0!important;width:auto!important;cursor:pointer;font-size:16px}
+</style>
+<script src="https://cdn.jsdelivr.net/npm/html2canvas"></script>
+<style>
 .roundBtn{
  padding:10px 18px;
  border:none;
@@ -30,34 +29,49 @@ th,td{padding:10px;border-bottom:1px solid #eee;text-align:left;font-size:.9rem}
  color:#222;
  font-weight:600;
  min-width:52px;
- cursor:pointer;
 }
 .roundBtn.activeRound{
  background:#2563eb !important;
  color:#fff !important;
  box-shadow:0 0 0 2px rgba(37,99,235,.15);
 }
+</style>
 
-/* ----------------------------------------------------
-   [FIX] ปัญหาที่ (1) ขยาย Dashboard กำจัด Unused Space บน Desktop 
-   ---------------------------------------------------- */
+<style>
+/* คงดีไซน์ดั้งเดิมของระบบไว้ ห้ามสลับหรือย้าย UX */
 @media (min-width: 900px){
-  .container > .grid {
-    display: grid !important;
-    grid-template-columns: 34% 66% !important; /* ปรับลดฟอร์มเหลือ 34% ขยายแดชบอร์ดและกราฟเป็น 66% */
-    gap: 18px !important;
-    align-items: start !important;
+  .main-grid, .top-grid, .dashboard-grid{
+    display:grid !important;
+    grid-template-columns:35% 65% !important;
+    gap:18px !important;
+    align-items:start;
+  }
+  .monitoring-dashboard,
+  .dashboard-card{
+    width:100% !important;
+    max-width:none !important;
+  }
+}
+@media (min-width:900px){
+  .monitoring-dashboard,.dashboard-card{
+    width:100%!important;
+    max-width:none!important;
+  }
+}
+@media (min-width:700px){
+  .monitoring-dashboard{
+      min-width:520px!important;
+      flex:1.6!important;
   }
 }
 
-/* บังคับควบคุมกล่องแคนวาสของกราฟให้แสดงผลสมบูรณ์ */
-#chart {
-  width: 100% !important;
-  height: 360px !important;
-  display: block !important;
+/* [FIX] ควบคุมขนาดกราฟไม่ให้เบียดตัวหนังสือจนแดชบอร์ดเละ */
+#chart{
+  width:100%!important;
+  height:340px!important;
+  display:block!important;
 }
 </style>
-<script src="https://cdn.jsdelivr.net/npm/html2canvas"></script>
 </head>
 <body>
 <header>
@@ -172,14 +186,12 @@ th,td{padding:10px;border-bottom:1px solid #eee;text-align:left;font-size:.9rem}
 <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:12px">
 <button onclick="saveReportImage()">Save Report Image</button>
 <button onclick="saveGraphImage()">Save Graph</button>
-</div>
-<div id="chartStatus" style="margin-top:8px;font-size:.85rem;color:#666"></div>
-</div>
+</div><div id="chartStatus" style="margin-top:8px;font-size:.85rem;color:#666"></div>
 
 </div>
+</div>
 
-<div style="display:grid;grid-template-columns:2fr 1fr;gap:16px">
-<div class="card">
+<div style="display:grid;grid-template-columns:2fr 1fr;gap:16px"><div class="card">
 <h3>Evidence Table</h3>
 <div class="tablewrap">
 <table>
@@ -190,14 +202,14 @@ th,td{padding:10px;border-bottom:1px solid #eee;text-align:left;font-size:.9rem}
 </thead>
 <tbody id="tbody"></tbody>
 </table>
-</div>
-</div>
+</div></div>
 
 <div class="card">
 <h3>Session Timeline</h3>
 <div id="timeline"></div>
 </div>
 </div>
+
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -269,38 +281,32 @@ function renderChart(data){
  let ctx=gid('chart');
  if(chartObj) chartObj.destroy();
 
- // ----------------------------------------------------
- // [FIX] ปัญหาที่ (2) เผื่อระยะขอบขวาอย่างปลอดภัยบนหน้าจอปกติ ป้องกัน Label ตัวล่าสุดชิดขอบขาด
- // ----------------------------------------------------
  chartObj=new Chart(ctx,{
   plugins:[ChartDataLabels],
   type:'line',
   options:{
    responsive: true,
    maintainAspectRatio: false,
-   layout: {
-    padding: {
-      top: 35,
-      right: 120, /* เพิ่มช่องว่างด้านขวาสุดของระนาบไลฟ์กราฟอย่างถาวร */
-      left: 20,
-      bottom: 25
+   layout:{
+    padding:{
+      top:35,
+      right:110, /* เผื่อขอบด้านขวากราฟในหน้าปกติ */
+      left:25,
+      bottom:45
     }
    },
    plugins:{
     datalabels:{
       anchor:'end',
-      align: function(context) {
-        // หากเป็นจุดสุดท้าย (ข้อมูลล่าสุด) ให้ขยับหลบมาทางซ้าย ป้องกันการทะลุขอบขวาบนมือถือ
-        const index = context.dataIndex;
-        const last = context.dataset.data.length - 1;
-        return index === last ? 'left' : 'top';
+      align: function(ctx) {
+          const last = ctx.dataset.data.length - 1;
+          return ctx.dataIndex === last ? 'left' : 'top';
       },
-      offset: function(context) {
-        const index = context.dataIndex;
-        const last = context.dataset.data.length - 1;
-        return index === last ? 16 : 6;
+      offset: function(ctx) {
+          const last = ctx.dataset.data.length - 1;
+          return ctx.dataIndex === last ? 16 : 6;
       },
-      clip: false, /* ปิดกลไกการหั่นขอบข้อความหลุดนอกแกนชาร์ต */
+      clip: false,
       clamp: false,
       formatter:(v)=>v,
       font:{size:10, weight:'bold'}
@@ -319,7 +325,7 @@ function renderChart(data){
   }
  });
 
- window.chart = chartObj; /* [FIX] ผูกอินสแตนซ์ลงระดับ Global Object จริง เพื่อให้ฟังก์ชัน Export ดึงข้อมูลได้ถูกต้อง */
+ window.chart = chartObj; /* ผูกลง Global Scope ให้ฟังก์ชันเซฟรูปเรียกใช้ได้แม่นยำ */
 }
 
 function renderAll(){
@@ -360,7 +366,6 @@ function renderTimeline(data){
  Object.keys(groups).forEach(k=>{
   let arr=groups[k];
   html+=`<div class="session"><b>${k}</b><br>`;
-
   if(arr.length>=2){
     let sorted=arr.slice().sort((a,b)=>a.time.localeCompare(b.time));
     let closeFound=false;
@@ -412,29 +417,20 @@ function saveReportImage(){
  });
 }
 
-// ----------------------------------------------------
-// [FIX] ปัญหาที่ (2) ฟังก์ชันเซฟรูปกราฟแบบประมวลผลเอซิงโครนัส ป้องกันขอบขวาโดนหั่นขาดบน iPhone 
-// ----------------------------------------------------
+/* [FIX] ซ่อมแซมฟังก์ชันเซฟรูปกราฟสำหรับ iPhone โดยการขยายสัดส่วน Padding ป้องกันขอบตัวอักษรโดนสับขาด */
 async function saveGraphImage(){
  let c = document.getElementById('chart');
- if(!window.chart) {
-    if(typeof chartObj !== 'undefined') window.chart = chartObj;
-    else return;
- }
+ if(!window.chart) return;
 
- // 1. เก็บชุด Padding ดั้งเดิมไว้ก่อนส่งออก
  const oldPad = window.chart.options.layout?.padding;
  
- // 2. บังคับยืด Padding ชั่วคราวให้ลึกเป็นพิเศษ กันไม่ให้พิกเซลตัวอักษรขวาสุดเบียดขอบหน้าจอรูปภาพ
  window.chart.options.layout = {
     padding: { top: 60, right: 180, left: 40, bottom: 60 }
  };
  window.chart.update();
 
- // 3. หน่วงเวลา 450ms เพื่อปล่อยให้เอนจินประมวลผลบน iOS/Safari จัดมิติแคนวาสตัวใหม่เสร็จสิ้น
- await new Promise(r => setTimeout(r, 450));
+ await new Promise(r => setTimeout(r, 400));
 
- // 4. ถ่ายโอนพิกเซลลงบอร์ด Canvas พื้นหลังขาวป้องกันรูปโปร่งแสงบน LINE
  let bg = document.createElement('canvas');
  bg.width = c.width;
  bg.height = c.height;
@@ -443,19 +439,16 @@ async function saveGraphImage(){
  ctx.fillRect(0,0,bg.width,bg.height);
  ctx.drawImage(c,0,0);
 
- // 5. ดาวน์โหลดรูปภาพ
  let a = document.createElement('a');
  a.download = 'BP_Graph.png';
  a.href = bg.toDataURL('image/png');
  a.click();
 
- // 6. ม้วนสไตล์การแสดงผลกลับไปเป็นรูปแบบปกติสำหรับแสดงบนไลฟ์แดชบอร์ด
  window.chart.options.layout.padding = oldPad;
  window.chart.update();
 }
 
-// ผลักดันลอจิกคุมพิกัด Round ให้อยู่ในบล็อกที่สะอาด
-document.addEventListener('DOMContentLoaded',()=>{
+window.addEventListener('load',()=>{
  document.querySelectorAll('.roundBtn').forEach(btn=>{
    btn.addEventListener('click',()=>{
       document.querySelectorAll('.roundBtn').forEach(b=>b.classList.remove('activeRound'));
@@ -468,6 +461,7 @@ document.addEventListener('DOMContentLoaded',()=>{
 gid('date').valueAsDate=new Date();
 </script>
 
+<!-- Firebase Module -->
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-app.js";
 import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-auth.js";
@@ -575,7 +569,6 @@ window.addEventListener('load', bootSync);
 </script>
 
 <script>
-// ควบคุมระบบปุ่มลบ-บวกเวลา 5 นาที
 window.addEventListener('load',()=>{
  const plus=document.getElementById('plus5Btn');
  const minus=document.getElementById('minus5Btn');
