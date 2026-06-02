@@ -708,5 +708,57 @@ window.addEventListener('load',()=>{
 });
 </script>
 
+
+<script>
+window.addEventListener('load',()=>{
+
+ if(typeof saveGraph==='function'){
+   const oldSaveGraph=saveGraph;
+
+   saveGraph=async function(){
+      if(window.chart){
+        const oldPad = chart.options.layout?.padding || {};
+        const oldCanvasW = chart.canvas?.style.width;
+        const oldCanvasH = chart.canvas?.style.height;
+
+        // iPhone-safe export canvas
+        chart.options.layout = {
+          padding:{
+            top:70,
+            right:140,
+            left:40,
+            bottom:90
+          }
+        };
+
+        if(chart.canvas){
+          chart.canvas.style.width='1600px';
+          chart.canvas.style.height='900px';
+        }
+
+        chart.resize();
+        chart.update();
+
+        await new Promise(r=>setTimeout(r,400));
+        await oldSaveGraph();
+
+        chart.options.layout.padding = oldPad;
+
+        if(chart.canvas){
+          chart.canvas.style.width=oldCanvasW;
+          chart.canvas.style.height=oldCanvasH;
+        }
+
+        chart.resize();
+        chart.update();
+      } else {
+        oldSaveGraph();
+      }
+   }
+ }
+
+});
+</script>
+
 </body>
 </html>
