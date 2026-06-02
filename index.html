@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Home BP Monitor – Family Care Edition</title>
+<style>
+:root{
+ --bg:#f7f7f8; --card:#fff; --text:#222; --muted:#666; --line:#e6e6e8;
+ --accent:#3b82f6; --ok:#1f9d55; --warn:#d97706;
+}
+*{box-sizing:border-box}
+body{
+ font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+ background:var(--bg); color:var(--text); margin:0;
+}
+header{
+ padding:22px 18px;
+ background:#fff;
+ border-bottom:1px solid var(--line);
+ position:sticky; top:0;
+}
+h1{margin:0;font-size:1.35rem}
+.sub{color:var(--muted);font-size:.92rem;margin-top:4px}
+.container{max-width:980px;margin:auto;padding:18px}
+.grid{display:grid;gap:16px;grid-template-columns:repeat(auto-fit,minmax(280px,1fr))}
+.card{
+ background:var(--card);
+ border:1px solid var(--line);
+ border-radius:16px;
+ padding:18px;
+}
+h2{font-size:1rem;margin:0 0 14px}
+label{display:block;font-size:.92rem;margin:10px 0 5px}
+input,select,textarea,button{
+ width:100%; padding:12px; border-radius:12px;
+ border:1px solid #d8d8dc; font:inherit;
+}
+textarea{min-height:72px}
+button{
+ background:var(--accent); color:#fff; border:none;
+ font-weight:600; cursor:pointer;
+}
+.secondary{background:#eef3ff;color:#1d4ed8}
+.table-wrap{overflow:auto}
+table{width:100%;border-collapse:collapse}
+th,td{padding:10px;border-bottom:1px solid var(--line);font-size:.92rem;text-align:left}
+.badge{
+ display:inline-block;padding:5px 10px;border-radius:999px;
+ font-size:.8rem;background:#eef2ff;color:#334155
+}
+.avg{font-size:1.6rem;font-weight:700}
+.muted{color:var(--muted)}
+.footer{font-size:.82rem;color:var(--muted);margin-top:16px}
+</style>
+</head>
+<body>
+<header>
+<h1>Home Blood Pressure Monitor</h1>
+<div class="sub">สำหรับติดตามความดันที่บ้าน + เตรียมข้อมูลส่งแพทย์</div>
+</header>
+
+<div class="container">
+<div class="grid">
+
+<div class="card">
+<h2>Today Snapshot</h2>
+<div class="avg" id="avgDisplay">– / –</div>
+<div class="muted">ค่าเฉลี่ยจากข้อมูลในเครื่อง</div>
+<div style="margin-top:12px" id="countDisplay">0 readings</div>
+</div>
+
+<div class="card">
+<h2>เพิ่มค่าความดัน</h2>
+<label>วันที่</label>
+<input type="date" id="date">
+<label>เวลา</label>
+<input type="time" id="time">
+<label>Systolic</label>
+<input type="number" id="sys">
+<label>Diastolic</label>
+<input type="number" id="dia">
+<label>Pulse</label>
+<input type="number" id="pulse">
+
+<label>สถานที่วัด</label>
+<select id="location">
+<option>Home</option>
+<option>Clinic</option>
+<option>Hospital</option>
+</select>
+
+<label>พักก่อนวัด</label>
+<select id="rest">
+<option>≥ 5 min</option>
+<option>&lt; 5 min</option>
+<option>No rest</option>
+</select>
+
+<label>บริบทเพิ่มเติม</label>
+<textarea id="note" placeholder="เช่น เดินไกล รีบ ขึ้นบันได หลังอาหาร ฯลฯ"></textarea>
+
+<button onclick="saveReading()">Save Reading</button>
+</div>
+
+</div>
+
+<div class="card" style="margin-top:16px">
+<h2>Timeline / Log</h2>
+<div class="table-wrap">
+<table id="table">
+<thead>
+<tr>
+<th>Date</th><th>BP</th><th>Pulse</th><th>Location</th><th>Rest</th><th>Note</th>
+</tr>
+</thead>
+<tbody></tbody>
+</table>
+</div>
+<button class="secondary" style="margin-top:14px" onclick="generateReport()">Generate Report</button>
+<div id="report" style="margin-top:16px;white-space:pre-wrap"></div>
+<div class="footer">
+ข้อมูลเก็บใน browser เครื่องนี้เท่านั้น • เว็บนี้ใช้จัดระเบียบข้อมูลและสร้างรายงาน ไม่ใช่ระบบวินิจฉัยโรค
+</div>
+
+<div class="card" style="margin-top:16px">
+<h2>Cloud Sync (Prototype)</h2>
+<div class="muted">สำหรับแชร์ข้อมูลระหว่างน้าและแม่ผ่าน Supabase / cloud database (v0.2 architecture placeholder)</div>
+<label>Patient / Family Code</label>
+<input type="text" id="familyCode" placeholder="เช่น NAA-001">
+<button onclick="saveFamilyCode()">Save Code</button>
+<div id="syncStatus" style="margin-top:10px"></div>
+</div>
+
+<script>
+function saveFamilyCode(){
+ let code=document.getElementById("familyCode").value;
+ localStorage.setItem("familyCode",code);
+ document.getElementById("syncStatus").innerText=
+ code ? "Family code saved • ready for cloud sync setup" : "";
+}
+document.addEventListener("DOMContentLoaded",()=>{
+ let code=localStorage.getItem("familyCode")||"";
+ if(document.getElementById("familyCode")) document.getElementById("familyCode").value=code;
+});
+</script>
+
+</div>
+</div>
+
+<script>
+const tbody=document.querySelector("#table tbody");
+
+function load(){
+ let data=JSON.parse(localStorage.getItem("bpData")||"[]");
+ render(data);
+}
+function saveReading(){
+ const r={
+  date:date.value,time:time.value,sys:+sys.value,dia:+dia.value,
+  pulse:pulse.value,location:location.value,rest:rest.value,note:note.value
+ };
+ if(!r.date||!r.sys||!r.dia){alert("กรอกวันที่และ BP");return;}
+ let data=JSON.parse(localStorage.getItem("bpData")||"[]");
+ data.unshift(r);
+ localStorage.setItem("bpData",JSON.stringify(data));
+ render(data);
+}
+function render(data){
+ tbody.innerHTML="";
+ let s=0,d=0,c=0;
+ data.forEach(r=>{
+  tbody.innerHTML+=`<tr>
+  <td>${r.date} ${r.time||""}</td>
+  <td><span class="badge">${r.sys}/${r.dia}</span></td>
+  <td>${r.pulse||"-"}</td>
+  <td>${r.location}</td>
+  <td>${r.rest}</td>
+  <td>${r.note||"-"}</td></tr>`;
+  if(r.sys&&r.dia){s+=+r.sys;d+=+r.dia;c++;}
+ });
+ if(c){
+  avgDisplay.innerText=Math.round(s/c)+" / "+Math.round(d/c);
+ }
+ countDisplay.innerText=c+" readings";
+}
+function generateReport(){
+ let data=JSON.parse(localStorage.getItem("bpData")||"[]");
+ if(!data.length){report.innerText="ยังไม่มีข้อมูล";return;}
+ let s=0,d=0;
+ data.forEach(r=>{s+=+r.sys;d+=+r.dia;});
+ let avgS=Math.round(s/data.length), avgD=Math.round(d/data.length);
+ report.innerText=
+`Home Blood Pressure Report
+
+Total readings: ${data.length}
+Average BP: ${avgS}/${avgD}
+
+Readings:
+` + data.map(r=>`${r.date} ${r.time||""} | ${r.sys}/${r.dia} | ${r.location} | ${r.note||""}`).join("\n") +
+
+`\n\nPrepared for physician review.
+(Generated from home monitoring records)`;
+}
+date.valueAsDate=new Date();
+load();
+</script>
+</body>
+</html>
