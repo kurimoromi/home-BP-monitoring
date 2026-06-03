@@ -1,4 +1,5 @@
 
+
 <!DOCTYPE html>
 <html lang="th">
 <head>
@@ -8,185 +9,24 @@
 <style>
 body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;background:#f5f6f8;margin:0;color:#222}
 header{background:#fff;padding:18px;border-bottom:1px solid #ddd;position:sticky;top:0}
-.container{width:min(100%,1800px);margin:0 auto;padding:16px}
+.container{max-width:1200px;margin:auto;padding:16px}
 .card{background:#fff;border:1px solid #ddd;border-radius:16px;padding:16px;margin-bottom:16px}
 .grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
 label{display:block;margin:10px 0 5px}
 input,select,textarea,button{width:100%;padding:12px;border-radius:10px;border:1px solid #ccc;font:inherit;box-sizing:border-box}
 textarea{min-height:60px}
 button{background:#2563eb;color:#fff;border:none;font-weight:600}
-.tablewrap{overflow:visible;max-height:none;}
+.tablewrap{overflow:auto;max-height:520px}
 table{width:100%;border-collapse:collapse}
 th,td{padding:10px;border-bottom:1px solid #eee;text-align:left;font-size:.9rem}
 .session{border-left:4px solid #2563eb;padding-left:10px;margin-bottom:12px}.icon-delete{background:transparent!important;color:#666!important;border:none!important;padding:0!important;width:auto!important;cursor:pointer;font-size:16px}
-
-@media (max-width:899px){
-  .container{
-    width:100% !important;
-    max-width:none !important;
-    padding:12px !important;
-    box-sizing:border-box !important;
-  }
-  .grid{
-    grid-template-columns:42% 58% !important;
-    gap:12px !important;
-    align-items:start !important;
-  }
-  .grid > .card{
-    min-width:0 !important;
-    width:100% !important;
-  }
-  header{
-    padding-left:12px !important;
-    padding-right:12px !important;
-  }
-}
 </style>
-<script src="https://cdn.jsdelivr.net/npm/html2canvas"></script>
-<style>
-.roundBtn{
- padding:10px 18px;
- border:none;
- border-radius:10px;
- background:#e5e7eb;
- color:#222;
- font-weight:600;
- min-width:52px;
-}
-.roundBtn.activeRound{
- background:#2563eb !important;
- color:#fff !important;
- box-shadow:0 0 0 2px rgba(37,99,235,.15);
-}
-</style>
-
-
-<style>
-/* v1.3 layout expansion */
-@media (min-width: 900px){
-  .main-grid, .top-grid, .dashboard-grid{
-    display:grid !important;
-    grid-template-columns:35% 65% !important;
-    gap:18px !important;
-    align-items:start;
-  }
-
-  .monitoring-dashboard,
-  .dashboard-card{
-    width:100% !important;
-    max-width:none !important;
-  }
-}
-
-</style>
-
-
-<style>
-/* safer v1.3 dashboard sizing */
-@media (min-width:900px){
-  .monitoring-dashboard,.dashboard-card{
-    width:100%!important;
-    max-width:none!important;
-  }
-  #bpChart{
-    max-width:100%!important;
-    height:320px!important;
-  }
-}
-</style>
-
-
-<style>
-/* HARD dashboard expansion */
-@media (min-width:700px){
-  .monitoring-dashboard{
-      min-width:520px!important;
-      flex:1.6!important;
-  }
-}
-
-/* chart wrapper only */
-#bpChart{
-  width:100%!important;
-  height:360px!important;
-}
-</style>
-
-<script>
-window.addEventListener('load',()=>{
-
- if(window.chart){
-
-    // live graph ROOT FIX
-    chart.options.maintainAspectRatio=false;
-
-    chart.options.layout = {
-      padding:{
-        top:45,
-        right:220,
-        left:35,
-        bottom:75
-      }
-    };
-
-    if(chart.options.plugins && chart.options.plugins.datalabels){
-      chart.options.plugins.datalabels.clip=false;
-      chart.options.plugins.datalabels.clamp=false;
-      chart.options.plugins.datalabels.align=function(ctx){
-          const last=ctx.dataset.data.length-1;
-          return ctx.dataIndex===last ? 'left' : 'top';
-      };
-      chart.options.plugins.datalabels.offset=function(ctx){
-          const last=ctx.dataset.data.length-1;
-          return ctx.dataIndex===last ? 28 : 6;
-      };
-    }
-
-    chart.resize();
-    chart.update();
- }
-});
-</script>
-
-
-<style>
-/* v1.3.3 targeted width fix only - preserve placement */
-@media (min-width:700px){
-  .grid{
-    grid-template-columns:minmax(320px,36%) minmax(520px,64%) !important;
-    align-items:start;
-  }
-  .grid > .card:last-child{
-    width:100% !important;
-    min-width:0 !important;
-  }
-  #chart{
-    width:100% !important;
-    min-height:300px !important;
-  }
-}
-</style>
-
-</head>
+<script src="https://cdn.jsdelivr.net/npm/html2canvas"></script></head>
 <body>
 <header>
 <b>BP Monitor – Phase 2</b><br>
 <small>Monitoring Workspace</small>
-<div style="float:right;font-size:.85rem;display:flex;gap:8px;align-items:center">
-<span id="familyBadge">Family: Not Connected</span>
-<button id="copyFamilyBtn" style="width:auto;padding:6px 10px">📋</button>
-</div>
 </header>
-
-
-<div id="familySetup" style="position:fixed;inset:0;background:rgba(0,0,0,.45);display:none;align-items:center;justify-content:center;z-index:9999">
-<div style="background:#fff;padding:20px;border-radius:16px;width:min(90vw,420px)">
-<h3>Family Code</h3>
-<p>กรอกรหัสครอบครัว เช่น RABB-559</p>
-<input id="familyCodeInput" placeholder="RABB-559">
-<button id="familyContinueBtn" style="margin-top:12px">Continue</button>
-</div>
-</div>
 
 <div class="container">
 
@@ -200,10 +40,6 @@ window.addEventListener('load',()=>{
 
 <label>Time</label>
 <input type="time" id="time" onchange="autoSession()">
-<div style="display:flex;gap:8px;margin-top:6px">
-<button type="button" id="minus5Btn" style="width:auto;padding:6px 12px">−5m</button>
-<button type="button" id="plus5Btn" style="width:auto;padding:6px 12px">+5m</button>
-</div>
 
 <label>Session</label>
 <select id="session">
@@ -214,14 +50,12 @@ window.addEventListener('load',()=>{
 </select>
 
 <label>Round</label>
-
-<div id="roundButtons" style="display:flex;gap:8px;margin-top:6px">
-<button type="button" class="roundBtn activeRound" data-round="1">1</button>
-<button type="button" class="roundBtn" data-round="2">2</button>
-<button type="button" class="roundBtn" data-round="3">3</button>
-<input type="hidden" id="round" value="1">
-</div>
-
+<select id="round">
+<option>1</option>
+<option>2</option>
+<option>3</option>
+<option>More</option>
+</select>
 
 <label>SYS (เลขบน)</label>
 <input type="number" id="sys" inputmode="numeric" pattern="[0-9]*">
@@ -338,7 +172,7 @@ function autoSession(){
 }
 
 function saveReading(){
- let data=window.bpDataCache||[];
+ let data=JSON.parse(localStorage.getItem('bpData')||'[]');
 
  autoSession();
 
@@ -364,7 +198,7 @@ function saveReading(){
  }
 
  data.unshift(r);
- // cloud managed
+ localStorage.setItem('bpData',JSON.stringify(data));
 
  gid('sys').value='';
  gid('dia').value='';
@@ -377,7 +211,7 @@ function saveReading(){
 }
 
 function filteredData(){
- let data=window.bpDataCache||[];
+ let data=JSON.parse(localStorage.getItem('bpData')||'[]');
  let f=gid('filter').value;
  if(f!=='all') data=data.filter(x=>x.location===f);
  return data;
@@ -538,15 +372,15 @@ function saveGraphImage(){
 
 function deleteReading(id){
  if(!confirm('ลบรายการนี้?')) return;
- let data=window.bpDataCache||[];
+ let data=JSON.parse(localStorage.getItem('bpData')||'[]');
  data=data.filter(x=>x.id!==id);
- // cloud managed
+ localStorage.setItem('bpData',JSON.stringify(data));
  renderAll();
 }
 
 
 (function migrateLegacyRecords(){
- let data=window.bpDataCache||[];
+ let data=JSON.parse(localStorage.getItem('bpData')||'[]');
  let changed=false;
  data.forEach((r,i)=>{
    if(!r.id){
@@ -555,487 +389,12 @@ function deleteReading(id){
    }
  });
  if(changed){
-   // cloud managed
+   localStorage.setItem('bpData',JSON.stringify(data));
  }
 })();
 
 gid('date').valueAsDate=new Date();
 renderAll();
-</script>
-
-
-
-
-
-<script type="module">
-import { initializeApp } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-app.js";
-import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-auth.js";
-import { getFirestore, collection, addDoc, deleteDoc, doc, onSnapshot, query, orderBy } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-firestore.js";
-
-const firebaseConfig = {
-  apiKey: "AIzaSyBbA_HXqmOIKJrJ8D12tlk7d_vUXaVsi0E",
-  authDomain: "bp-monitor-family.firebaseapp.com",
-  projectId: "bp-monitor-family",
-  storageBucket: "bp-monitor-family.firebasestorage.app",
-  messagingSenderId: "456193142332",
-  appId: "1:456193142332:web:162bd74937e14a0fd39d39"
-};
-
-const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
-const db = getFirestore(app);
-
-window.bpDataCache = [];
-
-async function bootSync(){
- try{
-   await signInAnonymously(auth);
-
-   let familyCode = localStorage.getItem('familyCode');
-   const badge = document.getElementById('familyBadge');
-   const modal = document.getElementById('familySetup');
-
-   function setBadge(){
-     if(badge && familyCode){
-       badge.textContent = 'Family: ' + familyCode;
-     }
-   }
-
-   function connect(code){
-      const q=query(collection(db,'families',code,'readings'),orderBy('createdAt','desc'));
-
-      onSnapshot(q,(snap)=>{
-         const cloud=snap.docs.map(d=>({id:d.id,...d.data()}));
-         window.bpDataCache=cloud;
-         localStorage.setItem('bpData', JSON.stringify(cloud));
-         if(typeof renderAll==='function') renderAll();
-      });
-
-      window.deleteReading = async function(id){
-         if(!confirm('ลบรายการนี้?')) return;
-         await deleteDoc(doc(db,'families',code,'readings',id));
-      }
-
-      const btn=document.querySelector('button[onclick="saveReading()"]');
-      if(btn){
-        btn.onclick = async function(){
-          try{
-            const r={
-              createdAt: Date.now(),
-              date: gid('date').value,
-              time: gid('time').value,
-              session: gid('session').value,
-              round: gid('round').value,
-              sys: Number(gid('sys').value),
-              dia: Number(gid('dia').value),
-              pulse: gid('pulse').value,
-              location: gid('location').value,
-              medication: gid('medication').value,
-              rest: gid('rest').value,
-              context: gid('context').value,
-              note: gid('note').value
-            };
-
-            if(!r.date || !r.sys || !r.dia){
-              alert('กรอก Date / SYS / DIA');
-              return;
-            }
-
-            await addDoc(collection(db,'families',code,'readings'), r);
-
-            gid('sys').value='';
-            gid('dia').value='';
-            gid('pulse').value='';
-            gid('note').value='';
-
-          }catch(e){
-            console.error(e);
-            alert('Save Error: '+e.message);
-          }
-        }
-      }
-   }
-
-   if(!familyCode){
-      modal.style.display='flex';
-      document.getElementById('familyContinueBtn').onclick=function(){
-        familyCode=document.getElementById('familyCodeInput').value.trim();
-        if(!familyCode) return;
-        localStorage.setItem('familyCode',familyCode);
-        modal.style.display='none';
-        setBadge();
-        connect(familyCode);
-      }
-   } else {
-      setBadge();
-      connect(familyCode);
-   }
-
-   document.getElementById('copyFamilyBtn')?.addEventListener('click',()=>{
-      navigator.clipboard.writeText(familyCode||'');
-      alert('คัดลอก Family Code แล้ว');
-   });
-
- }catch(e){
-   console.error(e);
-   alert('Firebase Boot Error: '+e.message);
- }
-}
-
-window.addEventListener('load', bootSync);
-</script>
-
-
-<script>
-window.addEventListener('load',()=>{
- const plus=document.getElementById('plus5Btn');
- const minus=document.getElementById('minus5Btn');
-
- function shift(mins){
-   const t=gid('time').value;
-   if(!t) return;
-   let [h,m]=t.split(':').map(Number);
-   let d=new Date();
-   d.setHours(h,m+mins,0,0);
-   gid('time').value=d.toTimeString().slice(0,5);
- }
-
- plus?.addEventListener('click',()=>shift(5));
- minus?.addEventListener('click',()=>shift(-5));
-});
-</script>
-
-
-<script>
-window.addEventListener('load',()=>{
- // round buttons
- document.querySelectorAll('.roundBtn').forEach(btn=>{
-   btn.addEventListener('click',()=>{
-      document.querySelectorAll('.roundBtn').forEach(b=>b.classList.remove('activeRound'));
-      btn.classList.add('activeRound');
-      gid('round').value=btn.dataset.round;
-   });
- });
-
-  // chart export extra padding
- if(window.chart && chart.options && chart.options.layout){
-    chart.options.layout.padding={right:40,left:10,top:20,bottom:20};
-    chart.update();
- }
-});
-</script>
-<style>
-.activeRound{
- background:#2f64e3 !important;
- color:#fff !important;
-}
-</style>
-
-
-<script>
-window.addEventListener('load',()=>{
-  setTimeout(()=>{
-    const tbody=document.querySelector('#evidenceTable tbody');
-    if(tbody){
-      const rows=[...tbody.querySelectorAll('tr')];
-      rows.sort((a,b)=>{
-        const ta=a.innerText.trim();
-        const tb=b.innerText.trim();
-        return ta.localeCompare(tb);
-      });
-      rows.forEach(r=>tbody.appendChild(r));
-    }
-  },800);
-});
-</script>
-
-
-<script>
-window.addEventListener('load',()=>{
-
-  // Evidence table full height
-  const ev=document.querySelector('.evidence-table-container') || 
-           document.querySelector('#evidenceTable')?.parentElement;
-  if(ev){
-    ev.style.maxHeight='none';
-    ev.style.overflow='visible';
-  }
-
-  // Report export = temporarily expand full table
-  if(typeof saveReportImage==='function'){
-    const oldSave=saveReportImage;
-    saveReportImage=async function(){
-      const wrap=document.querySelector('.evidence-table-container') || 
-                 document.querySelector('#evidenceTable')?.parentElement;
-      const oldH=wrap?.style.maxHeight;
-      const oldO=wrap?.style.overflow;
-      if(wrap){
-        wrap.style.maxHeight='none';
-        wrap.style.overflow='visible';
-      }
-      await oldSave();
-      if(wrap){
-        wrap.style.maxHeight=oldH;
-        wrap.style.overflow=oldO;
-      }
-    }
-  }
-
-  // Graph export extra right/top margin
-  if(typeof saveGraph==='function' && window.chart){
-    chart.options.layout = chart.options.layout || {};
-    chart.options.layout.padding = {top:35,right:55,left:15,bottom:25};
-    chart.update();
-  }
-
-});
-</script>
-
-
-<script>
-window.addEventListener('load',()=>{
-
- if(typeof saveGraph==='function'){
-   const oldGraph=saveGraph;
-
-   saveGraph=async function(){
-      if(window.chart){
-         const oldPad=chart.options.layout?.padding;
-         const oldAspect=chart.options.maintainAspectRatio;
-
-         chart.options.maintainAspectRatio=false;
-         chart.options.layout={
-            padding:{
-              top:60,
-              right:90,
-              left:35,
-              bottom:70
-            }
-         };
-
-         if(chart.canvas){
-           chart.canvas.style.width='1200px';
-           chart.canvas.style.height='700px';
-         }
-
-         chart.resize();
-         chart.update();
-
-         await new Promise(r=>setTimeout(r,250));
-         await oldGraph();
-
-         chart.options.layout.padding=oldPad;
-         chart.options.maintainAspectRatio=oldAspect;
-         chart.resize();
-         chart.update();
-      } else {
-         oldGraph();
-      }
-   }
- }
-
-});
-</script>
-
-
-<script>
-window.addEventListener('load',()=>{
-
- if(typeof saveGraph==='function'){
-   const oldSaveGraph=saveGraph;
-
-   saveGraph=async function(){
-      if(window.chart){
-        const oldPad = chart.options.layout?.padding || {};
-        const oldCanvasW = chart.canvas?.style.width;
-        const oldCanvasH = chart.canvas?.style.height;
-
-        // iPhone-safe export canvas
-        chart.options.layout = {
-          padding:{
-            top:70,
-            right:140,
-            left:40,
-            bottom:90
-          }
-        };
-
-        if(chart.canvas){
-          chart.canvas.style.width='1600px';
-          chart.canvas.style.height='900px';
-        }
-
-        chart.resize();
-        chart.update();
-
-        await new Promise(r=>setTimeout(r,400));
-        await oldSaveGraph();
-
-        chart.options.layout.padding = oldPad;
-
-        if(chart.canvas){
-          chart.canvas.style.width=oldCanvasW;
-          chart.canvas.style.height=oldCanvasH;
-        }
-
-        chart.resize();
-        chart.update();
-      } else {
-        oldSaveGraph();
-      }
-   }
- }
-
-});
-</script>
-
-
-<script>
-window.addEventListener('load',()=>{
-
- if(window.chart){
-    // disable clipping globally
-    if(chart.data?.datasets){
-      chart.data.datasets.forEach(ds=>{
-        ds.clip = false;
-      });
-    }
- }
-
- if(typeof saveGraph==='function'){
-   const oldSave=saveGraph;
-
-   saveGraph=async function(){
-
-      if(window.chart){
-         // more brutal export padding
-         chart.options.layout = {
-            padding:{
-              top:80,
-              right:220,
-              left:50,
-              bottom:100
-            }
-         };
-
-         // shift labels away from right edge during export
-         if(chart.options.plugins && chart.options.plugins.datalabels){
-            chart.options.plugins.datalabels = {
-               ...chart.options.plugins.datalabels,
-               clamp:false,
-               clip:false,
-               anchor:'end',
-               align:function(ctx){
-                  const idx=ctx.dataIndex;
-                  const last=ctx.dataset.data.length-1;
-                  return idx===last ? 'left' : 'top';
-               },
-               offset:function(ctx){
-                  const idx=ctx.dataIndex;
-                  const last=ctx.dataset.data.length-1;
-                  return idx===last ? 14 : 6;
-               }
-            };
-         }
-
-         chart.resize();
-         chart.update();
-
-         await new Promise(r=>setTimeout(r,500));
-      }
-
-      await oldSave();
-
-      if(window.chart){
-         chart.update();
-      }
-   }
- }
-
-});
-</script>
-
-
-<script>
-window.addEventListener('load',()=>{
-
- if(window.chart){
-    // live graph breathing room
-    chart.options.layout = {
-      padding:{
-        top:35,
-        right:90,
-        left:25,
-        bottom:45
-      }
-    };
-
-    if(chart.options.plugins && chart.options.plugins.datalabels){
-      chart.options.plugins.datalabels = {
-        ...chart.options.plugins.datalabels,
-        clip:false,
-        clamp:false,
-        align:function(ctx){
-          const idx=ctx.dataIndex;
-          const last=ctx.dataset.data.length-1;
-          return idx===last ? 'left' : 'top';
-        },
-        offset:function(ctx){
-          const idx=ctx.dataIndex;
-          const last=ctx.dataset.data.length-1;
-          return idx===last ? 14 : 6;
-        }
-      };
-    }
-
-    chart.resize();
-    chart.update();
- }
-
-});
-</script>
-
-
-<script>
-window.addEventListener('load',()=>{
-
- if(window.chart){
-
-   // chart only, no global canvas forcing
-   chart.options.responsive = true;
-   chart.options.maintainAspectRatio = true;
-
-   chart.options.layout = {
-      padding:{
-         top:35,
-         right:120,
-         left:25,
-         bottom:55
-      }
-   };
-
-   if(chart.options.plugins && chart.options.plugins.datalabels){
-      chart.options.plugins.datalabels = {
-        ...chart.options.plugins.datalabels,
-        clip:false,
-        clamp:false,
-        anchor:'end',
-        align:(ctx)=>{
-          const last=ctx.dataset.data.length-1;
-          return ctx.dataIndex===last ? 'left' : 'top';
-        },
-        offset:(ctx)=>{
-          const last=ctx.dataset.data.length-1;
-          return ctx.dataIndex===last ? 16 : 6;
-        }
-      };
-   }
-
-   chart.resize();
-   chart.update();
- }
-
-});
 </script>
 
 </body>
