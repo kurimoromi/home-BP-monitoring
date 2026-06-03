@@ -5,33 +5,22 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>BP Monitor Phase 2</title>
 <style>
-/* --------------------------------------
-   1. โครงสร้างหลัก (Clean & Reset)
------------------------------------------ */
-* { box-sizing: border-box; }
 body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;background:#f5f6f8;margin:0;color:#222}
-
-/* บังคับ Header ให้แผ่กว้าง 100% ของขอบจอเสมอ */
-header{background:#fff;padding:18px;border-bottom:1px solid #ddd;position:sticky;top:0;width:100%;z-index:100}
-
-/* ตัวครอบหลักขยายเต็มพื้นที่กว้างสุด 100% ไม่มีกั๊กขอบเทา */
-.container{width:100%;max-width:100%;margin:0;padding:16px}
+header{background:#fff;padding:18px;border-bottom:1px solid #ddd;position:sticky;top:0;z-index:100}
+.container{max-width:1200px;margin:auto;padding:16px}
 .card{background:#fff;border:1px solid #ddd;border-radius:16px;padding:16px;margin-bottom:16px}
-
-/* จัด Layout หน้าจอใหญ่: แบ่ง 2 คอลัมน์ ซ้าย-ขวา เท่ากันแบบพอดี */
-.grid{display:grid;grid-template-columns:1fr 1.2fr;gap:16px;align-items:stretch}
-.sub-grid{display:grid;grid-template-columns:2fr 1fr;gap:16px;align-items:start}
-
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
 label{display:block;margin:10px 0 5px}
 input,select,textarea,button{width:100%;padding:12px;border-radius:10px;border:1px solid #ccc;font:inherit;box-sizing:border-box}
 textarea{min-height:60px}
-button{background:#2563eb;color:#fff;border:none;font-weight:600;cursor:pointer}
+button{background:#2563eb;color:#fff;border:none;font-weight:600}
 .tablewrap{overflow:visible;max-height:none;}
 table{width:100%;border-collapse:collapse}
 th,td{padding:10px;border-bottom:1px solid #eee;text-align:left;font-size:.9rem}
-.session{border-left:4px solid #2563eb;padding-left:10px;margin-bottom:12px}
-.icon-delete{background:transparent!important;color:#666!important;border:none!important;padding:0!important;width:auto!important;cursor:pointer;font-size:16px}
-
+.session{border-left:4px solid #2563eb;padding-left:10px;margin-bottom:12px}.icon-delete{background:transparent!important;color:#666!important;border:none!important;padding:0!important;width:auto!important;cursor:pointer;font-size:16px}
+</style>
+<script src="https://cdn.jsdelivr.net/npm/html2canvas"></script>
+<style>
 .roundBtn{
  padding:10px 18px;
  border:none;
@@ -40,7 +29,6 @@ th,td{padding:10px;border-bottom:1px solid #eee;text-align:left;font-size:.9rem}
  color:#222;
  font-weight:600;
  min-width:52px;
- cursor:pointer;
 }
 .roundBtn.activeRound{
  background:#2563eb !important;
@@ -48,28 +36,26 @@ th,td{padding:10px;border-bottom:1px solid #eee;text-align:left;font-size:.9rem}
  box-shadow:0 0 0 2px rgba(37,99,235,.15);
 }
 
-/* --------------------------------------
-   2. ระบบ Responsive สำหรับมือถือ/แท็บเล็ตแนวตั้ง
-   (จัดเรียงเป็นแนวตั้ง 100% ถมพื้นที่ว่างสีเทาด้านขวา)
------------------------------------------ */
-@media (max-width: 991px) {
-    .grid, .sub-grid {
-        grid-template-columns: 1fr !important; /* ยุบเหลือ 1 คอลัมน์เรียงต่อกันลงมา */
-        gap: 16px !important;
-    }
+/* ==========================================================================
+   จุดที่แก้ไขเพิ่ม: เจาะจงเฉพาะ Mobile Site แนวตั้ง (ความกว้างหน้าจอขนาดเล็ก)
+   ========================================================================== */
+@media (max-width: 480px) and (orientation: portrait) {
+    /* 1. บังคับให้ Header ยืดเต็มความกว้างขอบจอ 100% */
     header {
-        padding: 14px 16px !important;
+        width: 100% !important;
+        box-sizing: border-box !important;
     }
-    .container {
-        padding: 12px !important;
+    
+    /* 2. สั่งให้ช่องบนขยาย: Add Reading เท่าเดิม (auto) แต่ Monitoring Dashboard กินพื้นที่เหลือฝั่งขวาจนเต็ม (1fr) */
+    .grid {
+        grid-template-columns: auto 1fr !important;
+        gap: 12px !important;
     }
-    th, td { padding: 8px 4px !important; font-size: 0.8rem !important; }
 }
 </style>
-<script src="https://cdn.jsdelivr.net/npm/html2canvas"></script>
+
 </head>
 <body>
-
 <header>
 <b>BP Monitor – Phase 2</b><br>
 <small>Monitoring Workspace</small>
@@ -78,6 +64,7 @@ th,td{padding:10px;border-bottom:1px solid #eee;text-align:left;font-size:.9rem}
 <button id="copyFamilyBtn" style="width:auto;padding:6px 10px">📋</button>
 </div>
 </header>
+
 
 <div id="familySetup" style="position:fixed;inset:0;background:rgba(0,0,0,.45);display:none;align-items:center;justify-content:center;z-index:9999">
 <div style="background:#fff;padding:20px;border-radius:16px;width:min(90vw,420px)">
@@ -108,17 +95,20 @@ th,td{padding:10px;border-bottom:1px solid #eee;text-align:left;font-size:.9rem}
 <label>Session</label>
 <select id="session">
 <option>เช้า</option>
+
 <option>กลางคืน</option>
 <option>อื่น ๆ</option>
 </select>
 
 <label>Round</label>
+
 <div id="roundButtons" style="display:flex;gap:8px;margin-top:6px">
 <button type="button" class="roundBtn activeRound" data-round="1">1</button>
 <button type="button" class="roundBtn" data-round="2">2</button>
 <button type="button" class="roundBtn" data-round="3">3</button>
 <input type="hidden" id="round" value="1">
 </div>
+
 
 <label>SYS (เลขบน)</label>
 <input type="number" id="sys" inputmode="numeric" pattern="[0-9]*">
@@ -181,7 +171,7 @@ th,td{padding:10px;border-bottom:1px solid #eee;text-align:left;font-size:.9rem}
 <div id="dashboard"></div>
 </div>
 
-<div class="chart-wrapper" style="position:relative; width:100%; height:340px; margin-top:15px;">
+<div class="chart-wrapper" style="position:relative; width:100%; height:260px; margin-top:10px;">
  <canvas id="chart"></canvas>
 </div>
 
@@ -189,18 +179,16 @@ th,td{padding:10px;border-bottom:1px solid #eee;text-align:left;font-size:.9rem}
 <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:12px">
 <button onclick="saveReportImage()">Save Report Image</button>
 <button onclick="saveGraphImage()">Save Graph</button>
-</div>
-<div id="chartStatus" style="margin-top:8px;font-size:.85rem;color:#666"></div>
-</div>
-
-</div>
+</div><div id="chartStatus" style="margin-top:8px;font-size:.85rem;color:#666"></div>
 </div>
 
-<div class="sub-grid">
-<div class="card">
+</div>
+</div>
+
+<div style="display:grid;grid-template-columns:2fr 1fr;gap:16px;align-items:start;"><div class="card">
 <h3>Evidence Table</h3>
 <div class="tablewrap">
-<table id="evidenceTable">
+<table>
 <thead>
 <tr>
 <th>Date/Time</th><th>Session</th><th>BP</th><th>Pulse</th><th>Location</th><th>Medication</th><th>Note</th><th>Delete</th>
@@ -208,8 +196,7 @@ th,td{padding:10px;border-bottom:1px solid #eee;text-align:left;font-size:.9rem}
 </thead>
 <tbody id="tbody"></tbody>
 </table>
-</div>
-</div>
+</div></div>
 
 <div class="card">
 <h3>Session Timeline</h3>
@@ -219,3 +206,415 @@ th,td{padding:10px;border-bottom:1px solid #eee;text-align:left;font-size:.9rem}
 
 </div>
 
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels"></script>
+<script>
+function gid(x){return document.getElementById(x)}
+
+function createID(){ return 'BP-'+Date.now(); }
+
+function numericFlag(sys,dia){
+ if(sys<100 || dia<60) return {label:'Low',color:'#dbeafe'};
+ if(sys>=140 || dia>=90) return {label:'Hypertension-range',color:'#fed7aa'};
+ if(sys>=120 || dia>=80) return {label:'Elevated',color:'#fef3c7'};
+ return {label:'Normal',color:'#dcfce7'};
+}
+
+function autoSession(){
+ let t=gid('time').value;
+ if(!t) return;
+ let h=parseInt(t.split(':')[0]);
+ if(h<12){gid('session').value='เช้า';}
+ else{gid('session').value='กลางคืน';}
+}
+
+function saveReading(){
+ let data=window.bpDataCache||[];
+ autoSession();
+
+ let r={
+  id:createID(),
+  date:gid('date').value,
+  time:gid('time').value,
+  session:gid('session').value,
+  round:gid('round').value,
+  sys:+gid('sys').value,
+  dia:+gid('dia').value,
+  pulse:gid('pulse').value,
+  location:gid('location').value,
+  medication:gid('medication').value,
+  rest:gid('rest').value,
+  context:gid('context').value,
+  note:gid('note').value
+ };
+
+ if(!r.date||!r.sys||!r.dia){
+  alert('กรอก Date/SYS/DIA');
+  return;
+ }
+
+ data.unshift(r);
+ gid('sys').value='';
+ gid('dia').value='';
+ gid('pulse').value='';
+ gid('note').value='';
+ gid('context').selectedIndex=0;
+ gid('rest').selectedIndex=0;
+
+ renderAll();
+}
+
+function filteredData(){
+ let data=window.bpDataCache||[];
+ let f=gid('filter').value;
+ if(f!=='all') data=data.filter(x=>x.location===f);
+ return data;
+}
+
+let chartObj=null;
+
+function renderAll(){
+ let data=filteredData();
+ renderDashboard(data);
+ renderTimeline(data);
+ renderTable(data);
+ renderChart(data);
+}
+
+function renderDashboard(data){
+ if(!data.length){
+  gid('dashboard').innerHTML='ยังไม่มีข้อมูล';
+  return;
+ }
+
+ let latest=data[0];
+ gid('dashboard').innerHTML=`
+ <div class="session">
+ <b>Monitoring Period</b><br>
+ ${data[data.length-1].date} → ${latest.date}<br><br>
+ <b>Latest Reading</b><br>
+ ${latest.sys}/${latest.dia}<br>
+ ${latest.time}<br>
+ ${latest.location}<br>
+ ${latest.rest}
+ </div>`;
+}
+
+function renderTimeline(data){
+ let groups={};
+ data.forEach(r=>{
+  let key=r.date+'-'+r.session;
+  if(!groups[key]) groups[key]=[];
+  groups[key].push(r);
+ });
+
+ let html='';
+ Object.keys(groups).forEach(k=>{
+  let arr=groups[k];
+  html+=`<div class="session"><b>${k}</b><br>`;
+
+  if(arr.length>=2){
+    let sorted=arr.slice().sort((a,b)=>a.time.localeCompare(b.time));
+    let closeFound=false;
+    for(let i=0;i<sorted.length-1;i++){
+      let a=sorted[i], b=sorted[i+1];
+      let close=Math.abs(a.sys-b.sys)<=5 && Math.abs(a.dia-b.dia)<=5;
+      if(close){
+        closeFound=true;
+        html+=`✓ 2 readings close together (${a.round} ↔ ${b.round})<br>`;
+        break;
+      }
+    }
+    if(!closeFound){ html+=`No close pair yet<br>`; }
+  }
+
+  arr.forEach(r=>{ html+=`${r.time} • ${r.sys}/${r.dia}<br>`; });
+  html+='</div>';
+ });
+
+ gid('timeline').innerHTML=html || 'ยังไม่มี session';
+}
+
+function renderTable(data){
+ let tbody=gid('tbody');
+ tbody.innerHTML='';
+
+ data.forEach(r=>{
+  tbody.innerHTML+=`
+  <tr>
+  <td>${r.date}<br>${r.time}</td>
+  <td>${(r.session||'-')} #${(r.round||'-')}</td>
+  <td>${r.sys}/${r.dia}</td>
+  <td>${r.pulse||'-'}</td>
+  <td>${r.location||'-'}</td>
+  <td>${r.medication||'-'}</td>
+  <td>${r.note||'-'}</td>
+  <td><button class="icon-delete" onclick="deleteReading('${r.id}')">🗑️</button></td>
+  </tr>`;
+ });
+}
+
+function renderChart(data){
+ let ctx=gid('chart');
+ if(chartObj) chartObj.destroy();
+
+ chartObj=new Chart(ctx,{
+  plugins:[ChartDataLabels],
+  type:'line',
+  options:{
+   responsive: true,
+   maintainAspectRatio: false,
+   plugins:{
+    datalabels:{
+      anchor:'end',
+      align:'top',
+      formatter:(v)=>v,
+      font:{size:10}
+    }
+   },
+   scales:{
+    y:{min:40,max:200}
+   }
+  },
+  data:{
+   labels:data.map(x=>x.date+' '+x.time).reverse(),
+   datasets:[
+    {label:'SYS',data:data.map(x=>x.sys).reverse(),borderColor:'#2563eb',backgroundColor:'rgba(37,99,235,0.1)'},
+    {label:'DIA',data:data.map(x=>x.dia).reverse(),borderColor:'#ef4444',backgroundColor:'rgba(239,68,68,0.1)'}
+   ]
+  }
+ });
+}
+
+function saveReportImage(){
+ const table=document.querySelector('.tablewrap');
+ const dels=document.querySelectorAll('.icon-delete, th:last-child, td:last-child');
+ dels.forEach(el=>el.style.display='none');
+ html2canvas(table,{backgroundColor:'#ffffff'}).then(canvas=>{
+  let a=document.createElement('a');
+  a.download='BP_Evidence_Table.png';
+  a.href=canvas.toDataURL('image/png');
+  a.click();
+  dels.forEach(el=>el.style.display='');
+ });
+}
+
+function saveGraphImage(){
+ let c=document.getElementById('chart');
+ let bg=document.createElement('canvas');
+ bg.width=c.width;
+ bg.height=c.height;
+ let ctx=bg.getContext('2d');
+ ctx.fillStyle='#ffffff';
+ ctx.fillRect(0,0,bg.width,bg.height);
+ ctx.drawImage(c,0,0);
+ let a=document.createElement('a');
+ a.download='BP_Graph.png';
+ a.href=bg.toDataURL('image/png');
+ a.click();
+}
+
+function deleteReading(id){
+ if(!confirm('ลบรายการนี้?')) return;
+ let data=window.bpDataCache||[];
+ data=data.filter(x=>x.id!==id);
+ renderAll();
+}
+
+gid('date').valueAsDate=new Date();
+renderAll();
+</script>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-app.js";
+import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-auth.js";
+import { getFirestore, collection, addDoc, deleteDoc, doc, onSnapshot, query, orderBy } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyBbA_HXqmOIKJrJ8D12tlk7d_vUXaVsi0E",
+  authDomain: "bp-monitor-family.firebaseapp.com",
+  projectId: "bp-monitor-family",
+  storageBucket: "bp-monitor-family.firebasestorage.app",
+  messagingSenderId: "456193142332",
+  appId: "1:456193142332:web:162bd74937e14a0fd39d39"
+};
+
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
+
+window.bpDataCache = [];
+
+async function bootSync(){
+ try{
+   await signInAnonymously(auth);
+   let familyCode = localStorage.getItem('familyCode');
+   const badge = document.getElementById('familyBadge');
+   const modal = document.getElementById('familySetup');
+
+   function setBadge(){
+     if(badge && familyCode){ badge.textContent = 'Family: ' + familyCode; }
+   }
+
+   function connect(code){
+      const q=query(collection(db,'families',code,'readings'),orderBy('createdAt','desc'));
+      onSnapshot(q,(snap)=>{
+         const cloud=snap.docs.map(d=>({id:d.id,...d.data()}));
+         window.bpDataCache=cloud;
+         localStorage.setItem('bpData', JSON.stringify(cloud));
+         if(typeof renderAll==='function') renderAll();
+      });
+
+      window.deleteReading = async function(id){
+         if(!confirm('ลบรายการนี้?')) return;
+         await deleteDoc(doc(db,'families',code,'readings',id));
+      }
+
+      const btn=document.querySelector('button[onclick="saveReading()"]');
+      if(btn){
+        btn.onclick = async function(){
+          try{
+            const r={
+              createdAt: Date.now(),
+              date: gid('date').value,
+              time: gid('time').value,
+              session: gid('session').value,
+              round: gid('round').value,
+              sys: Number(gid('sys').value),
+              dia: Number(gid('dia').value),
+              pulse: gid('pulse').value,
+              location: gid('location').value,
+              medication: gid('medication').value,
+              rest: gid('rest').value,
+              context: gid('context').value,
+              note: gid('note').value
+            };
+            if(!r.date || !r.sys || !r.dia){
+              alert('กรอก Date / SYS / DIA');
+              return;
+            }
+            await addDoc(collection(db,'families',code,'readings'), r);
+            gid('sys').value='';
+            gid('dia').value='';
+            gid('pulse').value='';
+            gid('note').value='';
+          }catch(e){
+            alert('Save Error: '+e.message);
+          }
+        }
+      }
+   }
+
+   if(!familyCode){
+      modal.style.display='flex';
+      document.getElementById('familyContinueBtn').onclick=function(){
+        familyCode=document.getElementById('familyCodeInput').value.trim();
+        if(!familyCode) return;
+        localStorage.setItem('familyCode',familyCode);
+        modal.style.display='none';
+        setBadge();
+        connect(familyCode);
+      }
+   } else {
+      setBadge();
+      connect(familyCode);
+   }
+
+   document.getElementById('copyFamilyBtn')?.addEventListener('click',()=>{
+      navigator.clipboard.writeText(familyCode||'');
+      alert('คัดลอก Family Code แล้ว');
+   });
+ }catch(e){
+   alert('Firebase Boot Error: '+e.message);
+ }
+}
+window.addEventListener('load', bootSync);
+</script>
+
+<script>
+window.addEventListener('load',()=>{
+ const plus=document.getElementById('plus5Btn');
+ const minus=document.getElementById('minus5Btn');
+ function shift(mins){
+   const t=gid('time').value;
+   if(!t) return;
+   let [h,m]=t.split(':').map(Number);
+   let d=new Date();
+   d.setHours(h,m+mins,0,0);
+   gid('time').value=d.toTimeString().slice(0,5);
+ }
+ plus?.addEventListener('click',()=>shift(5));
+ minus?.addEventListener('click',()=>shift(-5));
+});
+</script>
+
+<script>
+window.addEventListener('load',()=>{
+ document.querySelectorAll('.roundBtn').forEach(btn=>{
+   btn.addEventListener('click',()=>{
+      document.querySelectorAll('.roundBtn').forEach(b=>b.classList.remove('activeRound'));
+      btn.classList.add('activeRound');
+      gid('round').value=btn.dataset.round;
+   });
+ });
+});
+</script>
+
+<script>
+window.addEventListener('load',()=>{
+  setTimeout(()=>{
+    const tbody=document.querySelector('table tbody');
+    if(tbody){
+      const rows=[...tbody.querySelectorAll('tr')];
+      rows.sort((a,b)=>{
+        const ta=a.innerText.trim();
+        const tb=b.innerText.trim();
+        return ta.localeCompare(tb);
+      });
+      rows.forEach(r=>tbody.appendChild(r));
+    }
+  },800);
+});
+</script>
+
+
+<script>
+window.addEventListener('load',()=>{
+
+  // Evidence table full height
+  const ev=document.querySelector('.evidence-table-container') || 
+           document.querySelector('#evidenceTable')?.parentElement;
+  if(ev){
+    ev.style.maxHeight='none';
+    ev.style.overflow='visible';
+  }
+
+  // Report export = temporarily expand full table
+  if(typeof saveReportImage==='function'){\n    const oldSave=saveReportImage;
+    saveReportImage=async function(){
+      const wrap=document.querySelector('.evidence-table-container') || 
+                 document.querySelector('#evidenceTable')?.parentElement;
+      const oldH=wrap?.style.maxHeight;
+      const oldO=wrap?.style.overflow;
+      if(wrap){
+        wrap.style.maxHeight='none';
+        wrap.style.overflow='visible';
+      }
+      await oldSave();
+      if(wrap){
+        wrap.style.maxHeight=oldH;
+        wrap.style.overflow=oldO;
+      }
+    }
+  }
+
+  // Graph export extra right/top margin
+  if(typeof saveGraph==='function' && window.chart){
+    chart.options.layout = chart.options.layout || {};
+    chart.options.layout.padding = { right: 40, top: 25, left: 10, bottom: 10 };
+    chart.update();
+  }
+});
+</script>
+</body>
+</html>
