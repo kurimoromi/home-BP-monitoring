@@ -6,10 +6,12 @@
 <title>BP Monitor Phase 2</title>
 <style>
 body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;background:#f5f6f8;margin:0;color:#222}
-header{background:#fff;padding:18px;border-bottom:1px solid #ddd;position:sticky;top:0;width:100%;box-sizing:border-box}
+/* แก้ไขให้ Header แผ่เต็มพื้นที่ความกว้างจอ 100% */
+header{background:#fff;padding:18px;border-bottom:1px solid #ddd;position:sticky;top:0;width:100%;box-sizing:border-box;z-index:100}
+/* ปลดล็อก container ให้ขยายเต็มจอถาวร ไม่โดนบีบตรงกลาง */
 .container{width:100%;max-width:100%;margin:0;padding:12px;box-sizing:border-box}
 .card{background:#fff;border:1px solid #ddd;border-radius:16px;padding:16px;margin-bottom:16px;box-sizing:border-box}
-.grid{display:grid;grid-template-columns:1fr 1.5fr;gap:16px;align-items:start}
+.grid{display:grid;grid-template-columns:1fr 1.5fr;gap:16px;align-items:stretch}
 label{display:block;margin:10px 0 5px}
 input,select,textarea,button{width:100%;padding:12px;border-radius:10px;border:1px solid #ccc;font:inherit;box-sizing:border-box}
 textarea{min-height:60px}
@@ -19,18 +21,16 @@ table{width:100%;border-collapse:collapse}
 th,td{padding:10px;border-bottom:1px solid #eee;text-align:left;font-size:.9rem}
 .session{border-left:4px solid #2563eb;padding-left:10px;margin-bottom:12px}.icon-delete{background:transparent!important;color:#666!important;border:none!important;padding:0!important;width:auto!important;cursor:pointer;font-size:16px}
 
-/* บังคับขยายสัดส่วน Layout บนหน้าจอมือถือให้กว้างเต็มพื้นที่เหมือน iPad และไม่ยืดยาวเกินไป */
+/* บังคับขยายสัดส่วน Layout บนหน้าจอมือถือและแท็บเล็ตให้แผ่เต็มความกว้าง */
 @media (max-width: 768px) {
     .grid {
         grid-template-columns: 1fr 1.5fr !important;
         gap: 12px !important;
-        align-items: start !important;
     }
     div[style*="grid-template-columns:2fr 1fr"] {
         display: grid !important;
         grid-template-columns: 2fr 1fr !important;
         gap: 12px !important;
-        align-items: start !important;
     }
     header {
         padding: 14px 12px !important;
@@ -163,7 +163,8 @@ th,td{padding:10px;border-bottom:1px solid #eee;text-align:left;font-size:.9rem}
 <button onclick="saveReading()">Save Reading</button>
 </div>
 
-<div class="card">
+<div class="card" style="display:flex; flex-direction:column; justify-content:space-between;">
+<div>
 <h3>Monitoring Dashboard</h3>
 
 <label>Source Filter</label>
@@ -175,14 +176,18 @@ th,td{padding:10px;border-bottom:1px solid #eee;text-align:left;font-size:.9rem}
 </select>
 
 <div id="dashboard"></div>
-<div class="chart-wrapper" style="position:relative; width:100%; height:260px; max-height:260px;">
+</div>
+
+<div class="chart-wrapper" style="position:relative; width:100%; height:340px; margin-top:10px;">
  <canvas id="chart"></canvas>
 </div>
 
+<div>
 <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:12px">
 <button onclick="saveReportImage()">Save Report Image</button>
 <button onclick="saveGraphImage()">Save Graph</button>
 </div><div id="chartStatus" style="margin-top:8px;font-size:.85rem;color:#666"></div>
+</div>
 
 </div>
 </div>
