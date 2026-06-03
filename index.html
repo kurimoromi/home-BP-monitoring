@@ -11,22 +11,9 @@ header{background:#fff;padding:18px;border-bottom:1px solid #ddd;position:sticky
 .container{max-width:1200px;margin:auto;padding:16px}
 .card{background:#fff;border:1px solid #ddd;border-radius:16px;padding:16px;margin-bottom:16px}
 .grid{
-  display:grid;
-  gap:16px;
-}
-
-/* Desktop + Tablet */
-@media (min-width:900px){
-  .grid{
-    grid-template-columns:360px minmax(0,1fr);
-  }
-}
-
-/* Mobile */
-@media (max-width:899px){
-  .grid{
-    grid-template-columns:1fr;
-  }
+    display:grid;
+    gap:16px;
+    grid-template-columns:30% 70%;
 }
 label{display:block;margin:10px 0 5px}
 input,select,textarea,button{width:100%;padding:12px;border-radius:10px;border:1px solid #ccc;font:inherit;box-sizing:border-box}
