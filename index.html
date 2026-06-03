@@ -5,10 +5,10 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>BP Monitor Phase 2</title>
 <style>
-body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;background:#f5f6f8;margin:0;color:#222}
-header{background:#fff;padding:18px;border-bottom:1px solid #ddd;position:sticky;top:0;z-index:100}
-.container{max-width:1200px;margin:auto;padding:16px}
-.card{background:#fff;border:1px solid #ddd;border-radius:16px;padding:16px;margin-bottom:16px}
+body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;background:#f5f6f8;margin:0;color:#222;width:100%;overflow-x:hidden}
+header{background:#fff;padding:18px;border-bottom:1px solid #ddd;position:sticky;top:0;z-index:100;box-sizing:border-box;width:100%}
+.container{max-width:1200px;margin:auto;padding:16px;box-sizing:border-box;width:100%}
+.card{background:#fff;border:1px solid #ddd;border-radius:16px;padding:16px;margin-bottom:16px;box-sizing:border-box}
 .grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
 label{display:block;margin:10px 0 5px}
 input,select,textarea,button{width:100%;padding:12px;border-radius:10px;border:1px solid #ccc;font:inherit;box-sizing:border-box}
@@ -37,19 +37,33 @@ th,td{padding:10px;border-bottom:1px solid #eee;text-align:left;font-size:.9rem}
 }
 
 /* ==========================================================================
-   จุดที่แก้ไขเพิ่ม: เจาะจงเฉพาะ Mobile Site แนวตั้ง (ความกว้างหน้าจอขนาดเล็ก)
+   จุดแก้ไขด่วน: ล้างปัญหาเนื้อหาหลุดขอบและถมพื้นที่ว่างฝั่งขวาบน Mobile site แนวตั้ง
    ========================================================================== */
 @media (max-width: 480px) and (orientation: portrait) {
-    /* 1. บังคับให้ Header ยืดเต็มความกว้างขอบจอ 100% */
+    /* แก้อาการ Header เบียดขอบจอฝั่งขวาหลุด */
     header {
-        width: 100% !important;
-        box-sizing: border-box !important;
+        display: flex !important;
+        flex-direction: row !important;
+        justify-content: space-between !important;
+        align-items: center !important;
     }
-    
-    /* 2. สั่งให้ช่องบนขยาย: Add Reading เท่าเดิม (auto) แต่ Monitoring Dashboard กินพื้นที่เหลือฝั่งขวาจนเต็ม (1fr) */
+    header br, header small {
+        display: none !important; /* ยุบเนื้อหาแถวสองบนจอมือถือไม่ให้เบียดปุ่มครอบครัว */
+    }
+    header div[style*="float:right"] {
+        float: none !important;
+    }
+
+    /* รักษาขนาดกล่อง Add Reading เท่าเดิม แต่บีบให้ Monitoring Dashboard ขยายกินพื้นที่ขวาที่เหลือให้เต็ม */
     .grid {
         grid-template-columns: auto 1fr !important;
         gap: 12px !important;
+        width: 100% !important;
+    }
+    
+    /* บังคับ Canvas ของกราฟให้ยืดหดขยายตัวตามความกว้างสัดส่วนจริง */
+    #chart {
+        width: 100% !important;
     }
 }
 </style>
@@ -57,8 +71,10 @@ th,td{padding:10px;border-bottom:1px solid #eee;text-align:left;font-size:.9rem}
 </head>
 <body>
 <header>
-<b>BP Monitor – Phase 2</b><br>
-<small>Monitoring Workspace</small>
+<div>
+<b>BP Monitor – Phase 2</b>
+<small style="display:block; font-size:0.75rem; color:#666;">Monitoring Workspace</small>
+</div>
 <div style="float:right;font-size:.85rem;display:flex;gap:8px;align-items:center">
 <span id="familyBadge">Family: Not Connected</span>
 <button id="copyFamilyBtn" style="width:auto;padding:6px 10px">📋</button>
