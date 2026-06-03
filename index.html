@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="th">
 <head>
@@ -8,9 +7,9 @@
 <style>
 body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;background:#f5f6f8;margin:0;color:#222}
 header{background:#fff;padding:18px;border-bottom:1px solid #ddd;position:sticky;top:0}
-.container{max-width:1200px;margin:auto;padding:16px}
-.card{background:#fff;border:1px solid #ddd;border-radius:16px;padding:16px;margin-bottom:16px}
-.grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.container{width:100%;max-width:100%;margin:0;padding:12px;box-sizing:border-box}
+.card{background:#fff;border:1px solid #ddd;border-radius:16px;padding:16px;margin-bottom:16px;box-sizing:border-box}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;width:100%}
 label{display:block;margin:10px 0 5px}
 input,select,textarea,button{width:100%;padding:12px;border-radius:10px;border:1px solid #ccc;font:inherit;box-sizing:border-box}
 textarea{min-height:60px}
@@ -19,6 +18,29 @@ button{background:#2563eb;color:#fff;border:none;font-weight:600}
 table{width:100%;border-collapse:collapse}
 th,td{padding:10px;border-bottom:1px solid #eee;text-align:left;font-size:.9rem}
 .session{border-left:4px solid #2563eb;padding-left:10px;margin-bottom:12px}.icon-delete{background:transparent!important;color:#666!important;border:none!important;padding:0!important;width:auto!important;cursor:pointer;font-size:16px}
+
+/* ปรับแต่งสไตล์เพื่อบังคับให้ Layout บน Mobile ขยายเต็มจอและเรียงแถวตาม iPad */
+.grid, 
+div[style*="grid-template-columns:2fr 1fr"] {
+    display: grid !important;
+    grid-template-columns: 1fr 1.6fr !important; /* ปรับสัดส่วน Add Reading และ Dashboard */
+    gap: 12px !important;
+    width: 100% !important;
+}
+
+div[style*="grid-template-columns:2fr 1fr"] {
+    grid-template-columns: 2fr 1fr !important; /* คงสัดส่วน Evidence Table และ Timeline */
+}
+
+/* ปรับขนาดตัวอักษรของกราฟและฟอร์มบนจอเล็กอัตโนมัติ */
+@media (max-width: 600px) {
+    .card { padding: 10px; }
+    th, td { padding: 6px; font-size: 0.75rem; }
+    h3 { font-size: 1.1rem; margin-top: 5px; margin-bottom: 10px; }
+    label { margin: 6px 0 3px; font-size: 0.85rem; }
+    input, select, textarea, button, .roundBtn { padding: 8px; font-size: 0.85rem; }
+    .session { font-size: 0.85rem; }
+}
 </style>
 <script src="https://cdn.jsdelivr.net/npm/html2canvas"></script>
 <style>
@@ -356,6 +378,8 @@ function renderChart(data){
   plugins:[ChartDataLabels],
   type:'line',
   options:{
+   responsive: true,
+   maintainAspectRatio: false,
    plugins:{
     datalabels:{
       anchor:'end',
@@ -605,8 +629,9 @@ window.addEventListener('load',()=>{
 
 <script>
 window.addEventListener('load',()=>{
+ // อัปเดตคลาสสำหรับการเรียงข้อมูลตารางให้รองรับโครงสร้างใหม่
   setTimeout(()=>{
-    const tbody=document.querySelector('#evidenceTable tbody');
+    const tbody=document.querySelector('table tbody');
     if(tbody){
       const rows=[...tbody.querySelectorAll('tr')];
       rows.sort((a,b)=>{
@@ -625,8 +650,7 @@ window.addEventListener('load',()=>{
 window.addEventListener('load',()=>{
 
   // Evidence table full height
-  const ev=document.querySelector('.evidence-table-container') || 
-           document.querySelector('#evidenceTable')?.parentElement;
+  const ev=document.querySelector('.tablewrap');
   if(ev){
     ev.style.maxHeight='none';
     ev.style.overflow='visible';
@@ -636,8 +660,7 @@ window.addEventListener('load',()=>{
   if(typeof saveReportImage==='function'){
     const oldSave=saveReportImage;
     saveReportImage=async function(){
-      const wrap=document.querySelector('.evidence-table-container') || 
-                 document.querySelector('#evidenceTable')?.parentElement;
+      const wrap=document.querySelector('.tablewrap');
       const oldH=wrap?.style.maxHeight;
       const oldO=wrap?.style.overflow;
       if(wrap){
